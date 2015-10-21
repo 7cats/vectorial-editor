@@ -1,0 +1,51 @@
+object Desk: TDesk
+  Left = 490
+  Height = 414
+  Top = 324
+  Width = 581
+  Caption = 'Desk'
+  ClientHeight = 414
+  ClientWidth = 581
+  Menu = MainMenu
+  OnCreate = FormCreate
+  LCLVersion = '1.0.10.0'
+  object PaintDesk: TPaintBox
+    Left = 50
+    Height = 414
+    Top = 0
+    Width = 531
+    Align = alClient
+    OnMouseDown = PaintDeskMouseDown
+    OnMouseMove = PaintDeskMouseMove
+    OnPaint = FormPaint
+  end
+  object ToolsBar: TToolBar
+    Left = 0
+    Height = 414
+    Top = 0
+    Width = 50
+    Align = alLeft
+    ButtonHeight = 48
+    ButtonWidth = 48
+    Color = clWindow
+    ParentColor = False
+    TabOrder = 0
+  end
+  object MainMenu: TMainMenu
+    left = 60
+    object FileMenu: TMenuItem
+      Caption = 'Файл'
+      object ExitMItem: TMenuItem
+        Caption = 'Выход'
+        OnClick = ExitItemClick
+      end
+    end
+    object HelpMenu: TMenuItem
+      Caption = 'Помощь'
+      object AboutMItem: TMenuItem
+        Caption = 'О программе'
+        OnClick = AboutMItemClick
+      end
+    end
+  end
+end

@@ -5,7 +5,7 @@ unit UTools;
 interface
 
 uses
-  Classes, SysUtils, UFigures, Forms, Controls, Graphics, Dialogs;
+    Classes, SysUtils, UFigures, Forms, Controls, Graphics, Dialogs;
 type
 
     { TTool }
@@ -41,13 +41,12 @@ type
 
     TRecnungleTool = class(TLineTool)
         procedure AddFigure(point : TPoint); override;
-
     end;
 
     { TRoundRectangleTool }
 
     TRoundRectangleTool = class(TRecnungleTool)
-         procedure AddFigure(point : TPoint); override;
+        procedure AddFigure(point : TPoint); override;
     end;
 
     { TPolylineTool }
@@ -62,6 +61,12 @@ var
     Tools: array of TTool;
     ToolsImages: TImageList;
 implementation
+
+procedure AddTool(tool : TTool);
+begin
+    SetLength(Tools, Length(Tools) + 1);
+    Tools[High(Tools)] := tool;
+end;
 
 { TPolylineTool }
 
@@ -111,8 +116,8 @@ end;
 
 procedure TLineTool.AddFigure(point: TPoint);
 begin
-     SetLength(Figures, Length(Figures) + 1);
-     Figures[High(Figures)] := TLine.Create(point);
+    SetLength(Figures, Length(Figures) + 1);
+    Figures[High(Figures)] := TLine.Create(point);
 end;
 
 procedure TLineTool.StartDrawing(point: TPoint);
@@ -133,9 +138,7 @@ begin
     Figures[High(Figures)].AddPoint(point);
 end;
 
-
 { TTool }
-
 
 constructor TTool.Create(name: string);
 var
@@ -154,17 +157,10 @@ initialization
     ToolsImages := TImageList.Create(Nil);
     ToolsImages.Height:= 48;
     ToolsImages.Width:= 48;
-    SetLength(Tools, Length(Tools) + 1);
-    Tools[High(Tools)]:= TPencilTool.Create('pencil');
-    SetLength(Tools, Length(Tools) + 1);
-    Tools[High(Tools)]:= TLineTool.Create('line');
-    SetLength(Tools, Length(Tools) + 1);
-    Tools[High(Tools)]:= TPolylineTool.Create('polyline');
-    SetLength(Tools, Length(Tools) + 1);
-    Tools[High(Tools)]:= TEllipseTool.Create('ellipse');
-    SetLength(Tools, Length(Tools) + 1);
-    Tools[High(Tools)]:= TRecnungleTool.Create('rectungle');
-    SetLength(Tools, Length(Tools) + 1);
-    Tools[High(Tools)]:= TRoundRectangleTool.Create('roundrect');
+    AddTool(TPencilTool.Create('pencil'));
+    AddTool(TPolylineTool.Create('polyline'));
+    AddTool(TEllipseTool.Create('ellipse'));
+    AddTool(TRecnungleTool.Create('rectungle'));
+    AddTool(TRoundRectangleTool.Create('roundrect'));
 end.
 

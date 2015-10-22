@@ -23,26 +23,27 @@ type
         procedure Draw(AScene: TCanvas); override;
     end;
 
-    { TLine }
+    {{ TLine }
 
     TLine = class(TPencil)
         procedure Stranch(point : TPoint); override;
-    end;
+    end;                                            }
 
     { TPolyline }
 
-    TPolyline = class(TLine)
+    TPolyline = class(TPencil)
+        procedure Stranch(point : TPoint); override;
     end;
 
     { TEllipse }
 
-    TEllipse = class(TLine)
+    TEllipse = class(TPolyline)
         procedure Draw(AScene: TCanvas); override;
     end;
 
     { TRectangle }
 
-    TRectangle = class(TLine)
+    TRectangle = class(TPolyline)
         procedure Draw(AScene: TCanvas); override;
     end;
 
@@ -91,9 +92,9 @@ begin
         AScene.LineTo(FPoints[i]);
 end;
 
-{ TLine }
+{ TPolyLine }
 
-procedure TLine.Stranch(point: TPoint);
+procedure TPolyline.Stranch(point: TPoint);
 begin
     FPoints[1] := point;
 end;

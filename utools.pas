@@ -14,7 +14,7 @@ type
         procedure StartDrawing (point : TPoint); virtual; abstract;
         constructor Create(name : string);
         procedure AddFigure(point : TPoint); virtual; abstract;
-        procedure Additional(point : TPoint); virtual;
+        procedure AdditionalDraw(point : TPoint); virtual;
     end;
 
     { TPencilTool }
@@ -29,16 +29,8 @@ type
     TPolylineTool = class(TTool)
         procedure AddFigure(point : TPoint); override;
         procedure StartDrawing (point : TPoint); override;
-        procedure Additional (point : TPoint); override;
+        procedure AdditionalDraw (point : TPoint); override;
     end;
-
-
-    {{ TLineTool }
-
-    TLineTool = class(TPencilTool)
-        procedure AddFigure(point : TPoint); override;
-        procedure StartDrawing (point : TPoint); override;
-    end;}
 
     { TEllipseTool }
 
@@ -83,7 +75,7 @@ begin
     Figures[High(Figures)].Stranch(point);
 end;
 
-procedure TPolylineTool.Additional(point: TPoint);
+procedure TPolylineTool.AdditionalDraw(point: TPoint);
 begin
     Figures[High(Figures)].AddPoint(point);
 end;
@@ -113,17 +105,6 @@ begin
     Figures[High(Figures)] := TEllipse.Create(point);
 end;
 
-
-{{ TLineTool }
-
-procedure TLineTool.AddFigure(point: TPoint);
-begin
-    SetLength(Figures, Length(Figures) + 1);
-    Figures[High(Figures)] := TLine.Create(point);
-end;
-
-     }
-
 { TPencilTool }
 
 procedure TPencilTool.AddFigure(point: TPoint);
@@ -148,7 +129,7 @@ begin
     ToolsImages.AddIcon(i);
 end;
 
-procedure TTool.Additional(point: TPoint);
+procedure TTool.AdditionalDraw(point: TPoint);
 begin
 end;
 

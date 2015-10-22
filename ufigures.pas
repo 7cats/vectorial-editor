@@ -12,7 +12,7 @@ type
     TFigure = class
         FPoints: array of TPoint;
         procedure AddPoint(point: TPoint);
-        procedure Draw(AScene: TCanvas); virtual; abstract;
+        procedure Draw(ACanvas: TCanvas); virtual; abstract;
         procedure Stranch (point: TPoint) virtual; abstract;
         constructor Create(point: TPoint);
     end;
@@ -20,14 +20,8 @@ type
     { TPencil }
 
     TPencil = class(TFigure)
-        procedure Draw(AScene: TCanvas); override;
+        procedure Draw(ACanvas: TCanvas); override;
     end;
-
-    {{ TLine }
-
-    TLine = class(TPencil)
-        procedure Stranch(point : TPoint); override;
-    end;                                            }
 
     { TPolyline }
 
@@ -38,19 +32,19 @@ type
     { TEllipse }
 
     TEllipse = class(TPolyline)
-        procedure Draw(AScene: TCanvas); override;
+        procedure Draw(ACanvas: TCanvas); override;
     end;
 
     { TRectangle }
 
     TRectangle = class(TPolyline)
-        procedure Draw(AScene: TCanvas); override;
+        procedure Draw(ACanvas: TCanvas); override;
     end;
 
     { TRoundRectangle }
 
     TRoundRectangle = class(TRectangle)
-        procedure Draw(AScene: TCanvas); override;
+        procedure Draw(ACanvas: TCanvas); override;
     end;
 
 var
@@ -60,36 +54,34 @@ implementation
 
 { TRoundRectangle }
 
-procedure TRoundRectangle.Draw(AScene: TCanvas);
+procedure TRoundRectangle.Draw(ACanvas: TCanvas);
 begin
-    AScene.RoundRect(FPoints[0].x, FPoints[0].y, FPoints[1].x, FPoints[1].y, 20, 20);
+    ACanvas.RoundRect(FPoints[0].x, FPoints[0].y, FPoints[1].x, FPoints[1].y, 20, 20);
 end;
 
 { TEllipse }
 
-procedure TEllipse.Draw(AScene: TCanvas);
+procedure TEllipse.Draw(ACanvas: TCanvas);
 begin
-    AScene.Ellipse(FPoints[0].x, FPoints[0].y, FPoints[1].x, FPoints[1].y);
+    ACanvas.Ellipse(FPoints[0].x, FPoints[0].y, FPoints[1].x, FPoints[1].y);
 end;
 
 { TRectangle }
 
-procedure TRectangle.Draw(AScene: TCanvas);
+procedure TRectangle.Draw(ACanvas: TCanvas);
 begin
-    AScene.Rectangle(FPoints[0].x, FPoints[0].y, FPoints[1].x, FPoints[1].y);
+    ACanvas.Rectangle(FPoints[0].x, FPoints[0].y, FPoints[1].x, FPoints[1].y);
 end;
-
-
 
 { TPencil }
 
-procedure TPencil.Draw(AScene: TCanvas);
+procedure TPencil.Draw(ACanvas: TCanvas);
 var
     i: integer;
 begin
-    AScene.MoveTo(FPoints[0]);
+    ACanvas.MoveTo(FPoints[0]);
     for i := 1 to High(FPoints) do
-        AScene.LineTo(FPoints[i]);
+        ACanvas.LineTo(FPoints[i]);
 end;
 
 { TPolyLine }

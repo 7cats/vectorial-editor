@@ -13,29 +13,28 @@ type
     { TDesk }
 
     TDesk = class(TForm)
-		 MainMenu: TMainMenu;
-		 FileMenu: TMenuItem;
-		 ExitMItem: TMenuItem;
-		 HelpMenu: TMenuItem;
-		 AboutMItem: TMenuItem;
-		 PaintDesk: TPaintBox;
-		 ToolsBar: TToolBar;
-		 procedure AboutMItemClick(Sender: TObject);
-
-		 procedure ExitItemClick(Sender: TObject);
-		 procedure FormCreate(Sender: TObject);
-		 procedure FormPaint(Sender: TObject);
-		 procedure PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
-		     Shift: TShiftState; X, Y: Integer);
-		 procedure PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
-		     Y: Integer);
-		 procedure PanelBarButtonClick (Sender: TObject);
-		 private
-		     IndexTool: integer;
-		     DrawContinue : boolean;
-		 public
+	    MainMenu: TMainMenu;
+		FileMenu: TMenuItem;
+		ExitMItem: TMenuItem;
+		HelpMenu: TMenuItem;
+		AboutMItem: TMenuItem;
+		PaintDesk: TPaintBox;
+		ToolsBar: TToolBar;
+		procedure AboutMItemClick(Sender: TObject);
+		procedure ExitItemClick(Sender: TObject);
+		procedure FormCreate(Sender: TObject);
+		procedure FormPaint(Sender: TObject);
+	    procedure PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
+		    Shift: TShiftState; X, Y: Integer);
+		procedure PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
+	        Y: Integer);
+		procedure PanelBarButtonClick (Sender: TObject);
+		private
+		    IndexTool: integer;
+		    DrawContinue : boolean;
+		public
 	      { public declarations }
-	 end;
+	end;
 
 var
     Desk: TDesk;
@@ -110,7 +109,7 @@ begin
         DrawContinue:= true;
     end
     else if (ssRight in Shift) and (DrawContinue) then
-        Tools[IndexTool].Additional(Point(x,y));
+        Tools[IndexTool].AdditionalDraw(Point(x,y));
     Invalidate;
 end;
 

@@ -28,10 +28,12 @@ type
             Shift: TShiftState; X, Y: Integer);
         procedure PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
             Y: Integer);
+        procedure PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
+          Shift: TShiftState; X, Y: Integer);
         procedure PanelBarButtonClick (Sender: TObject);
         private
             IndexTool: integer;
-            DrawContinue : boolean;
+            DrawContinue, IsMouseDown : boolean;
         public
             { public declarations }
     end;
@@ -49,10 +51,17 @@ implementation
 procedure TDesk.PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
     Y: Integer);
 begin
-    if (ssLeft in Shift) then begin
+    if (ssLeft in Shift) and (IsMouseDown) then begin
         Tools[IndexTool].StartDrawing(point(x,y));
         Invalidate;
     end;
+end;
+
+procedure TDesk.PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if (Button = mbLeft) then
+      IsMouseDown := False;
 end;
 
 
@@ -81,6 +90,7 @@ begin
     IndexTool:= 0;
     DrawContinue:= false;
     ToolsBar.Images := ToolsImages;
+    IsMouseDown:= false;
     for i := 0 to High(Tools) do begin
         button := TToolButton.Create(self);
         button.Parent := ToolsBar;
@@ -104,11 +114,12 @@ end;
 procedure TDesk.PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
     Shift: TShiftState; X, Y: Integer);
 begin
-    if (ssLeft in Shift) then begin
+    if (Button = mbLeft) then begin
         Tools[IndexTool].AddFigure(Point(x,y));
         DrawContinue:= true;
+        IsMouseDown:= true;
     end
-    else if (ssRight in Shift) and (DrawContinue) then
+    else if (Button = mbLeft) and (DrawContinue) then
         Tools[IndexTool].AdditionalDraw(Point(x,y));
     Invalidate;
 end;

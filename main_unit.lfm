@@ -4,24 +4,25 @@ object Desk: TDesk
   Top = 324
   Width = 581
   Caption = 'Desk'
-  ClientHeight = 414
+  ClientHeight = 394
   ClientWidth = 581
   Menu = MainMenu
   OnCreate = FormCreate
-  LCLVersion = '1.0.10.0'
+  LCLVersion = '1.4.4.0'
   object PaintDesk: TPaintBox
     Left = 50
-    Height = 414
+    Height = 394
     Top = 0
     Width = 531
     Align = alClient
     OnMouseDown = PaintDeskMouseDown
     OnMouseMove = PaintDeskMouseMove
+    OnMouseUp = PaintDeskMouseUp
     OnPaint = FormPaint
   end
   object ToolsBar: TToolBar
     Left = 0
-    Height = 414
+    Height = 394
     Top = 0
     Width = 50
     Align = alLeft

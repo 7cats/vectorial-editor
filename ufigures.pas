@@ -5,12 +5,12 @@ unit UFigures;
 interface
 
 uses
-    Classes, SysUtils, Forms, Controls, Graphics, Dialogs;
+    Classes, SysUtils, Forms, Controls, Graphics, Dialogs, UField;
 type
     { TFigures }
 
     TFigure = class
-        FPoints: array of TPoint;
+        FPoints: array of TFloatPoint;
         procedure AddPoint(point: TPoint);
         procedure Draw(ACanvas: TCanvas); virtual; abstract;
         procedure Stranch (point: TPoint) virtual; abstract;
@@ -56,21 +56,21 @@ implementation
 
 procedure TRoundRectangle.Draw(ACanvas: TCanvas);
 begin
-    ACanvas.RoundRect(FPoints[0].x, FPoints[0].y, FPoints[1].x, FPoints[1].y, 20, 20);
+    ACanvas.RoundRect(round(FPoints[0].x), round(FPoints[0].y), round(FPoints[1].x), round(FPoints[1].y), 20, 20);
 end;
 
 { TEllipse }
 
 procedure TEllipse.Draw(ACanvas: TCanvas);
 begin
-    ACanvas.Ellipse(FPoints[0].x, FPoints[0].y, FPoints[1].x, FPoints[1].y);
+    ACanvas.Ellipse(round(FPoints[0].x), round(FPoints[0].y), round(FPoints[1].x), round(FPoints[1].y));
 end;
 
 { TRectangle }
 
 procedure TRectangle.Draw(ACanvas: TCanvas);
 begin
-    ACanvas.Rectangle(FPoints[0].x, FPoints[0].y, FPoints[1].x, FPoints[1].y);
+    ACanvas.Rectangle(round(FPoints[0].x), round(FPoints[0].y), round(FPoints[1].x), round(FPoints[1].y));
 end;
 
 { TPencil }
@@ -79,16 +79,17 @@ procedure TPencil.Draw(ACanvas: TCanvas);
 var
     i: integer;
 begin
-    ACanvas.MoveTo(FPoints[0]);
+    ACanvas.MoveTo(round(FPoints[0].x), round(FPoints[0].y));
     for i := 1 to High(FPoints) do
-        ACanvas.LineTo(FPoints[i]);
+        ACanvas.LineTo(round(FPoints[i].x), round(FPoints[i].y));
 end;
 
 { TPolyLine }
 
 procedure TPolyline.Stranch(point: TPoint);
 begin
-    FPoints[1] := point;
+    FPoints[1].x := trunc(point.x);
+    FPoints[1].y := trunc(point.y);
 end;
 
 { TFigures }
@@ -105,7 +106,8 @@ end;
 procedure TFigure.AddPoint(point : TPoint);
 begin
     SetLength(FPoints, Length(FPoints) + 1);
-    FPoints[High(FPoints)] := point;
+    FPoints[High(FPoints)].x := trunc(point.x);
+    FPoints[High(FPoints)].y := trunc(point.y);
 end;
 
 

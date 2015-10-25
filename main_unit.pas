@@ -119,7 +119,7 @@ begin
         DrawContinue:= true;
         IsMouseDown:= true;
     end
-    else if (Button = mbLeft) and (DrawContinue) then
+    else if (Button = mbRight) and (DrawContinue) then
         Tools[IndexTool].AdditionalDraw(Point(x,y));
     Invalidate;
 end;

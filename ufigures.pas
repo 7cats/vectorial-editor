@@ -56,21 +56,24 @@ implementation
 
 procedure TRoundRectangle.Draw(ACanvas: TCanvas);
 begin
-    ACanvas.RoundRect(round(FPoints[0].x), round(FPoints[0].y), round(FPoints[1].x), round(FPoints[1].y), 20, 20);
+    ACanvas.RoundRect(ViewPort.WorldToScreen(FPoints[0]).x, ViewPort.WorldToScreen(FPoints[0]).y,
+                    ViewPort.WorldToScreen(FPoints[1]).x, ViewPort.WorldToScreen(FPoints[1]).y, 20, 20);
 end;
 
 { TEllipse }
 
 procedure TEllipse.Draw(ACanvas: TCanvas);
 begin
-    ACanvas.Ellipse(round(FPoints[0].x), round(FPoints[0].y), round(FPoints[1].x), round(FPoints[1].y));
+    ACanvas.Ellipse(ViewPort.WorldToScreen(FPoints[0]).x, ViewPort.WorldToScreen(FPoints[0]).y,
+                  ViewPort.WorldToScreen(FPoints[1]).x, ViewPort.WorldToScreen(FPoints[1]).y);
 end;
 
 { TRectangle }
 
 procedure TRectangle.Draw(ACanvas: TCanvas);
 begin
-    ACanvas.Rectangle(round(FPoints[0].x), round(FPoints[0].y), round(FPoints[1].x), round(FPoints[1].y));
+    ACanvas.Rectangle(ViewPort.WorldToScreen(FPoints[0]).x, ViewPort.WorldToScreen(FPoints[0]).y,
+                    ViewPort.WorldToScreen(FPoints[1]).x, ViewPort.WorldToScreen(FPoints[1]).y);
 end;
 
 { TPencil }
@@ -79,21 +82,19 @@ procedure TPencil.Draw(ACanvas: TCanvas);
 var
     i: integer;
 begin
-    ACanvas.MoveTo(round(FPoints[0].x), round(FPoints[0].y));
+    ACanvas.MoveTo(ViewPort.WorldToScreen(FPoints[0]));
     for i := 1 to High(FPoints) do
-        ACanvas.LineTo(round(FPoints[i].x), round(FPoints[i].y));
+        ACanvas.LineTo(ViewPort.WorldToScreen(FPoints[i]));
 end;
 
 { TPolyLine }
 
 procedure TPolyline.Stranch(point: TPoint);
 begin
-    FPoints[1].x := trunc(point.x);
-    FPoints[1].y := trunc(point.y);
+   FPoints[1] := ViewPort.ScreenToWorld(point);
 end;
 
-{ TFigures }
-
+{ TFigure }
 
 constructor TFigure.Create(point: TPoint);
 begin
@@ -106,8 +107,7 @@ end;
 procedure TFigure.AddPoint(point : TPoint);
 begin
     SetLength(FPoints, Length(FPoints) + 1);
-    FPoints[High(FPoints)].x := trunc(point.x);
-    FPoints[High(FPoints)].y := trunc(point.y);
+    FPoints[High(FPoints)] := ViewPort.ScreenToWorld(point);
 end;
 
 

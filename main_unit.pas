@@ -6,7 +6,7 @@ interface
 
 uses
     Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
-    ExtCtrls, Menus, ComCtrls, StdCtrls, UTools, UFigures;
+    ExtCtrls, Menus, ComCtrls, StdCtrls, UTools, UFigures, UField;
 
 type
 
@@ -19,6 +19,8 @@ type
         HelpMenu: TMenuItem;
         AboutMItem: TMenuItem;
         PaintDesk: TPaintBox;
+        XcoordinateText: TStaticText;
+        YcoordinateText: TStaticText;
         ToolsBar: TToolBar;
         procedure AboutMItemClick(Sender: TObject);
         procedure ExitItemClick(Sender: TObject);
@@ -30,6 +32,7 @@ type
             Y: Integer);
         procedure PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
           Shift: TShiftState; X, Y: Integer);
+        procedure PaintDeskResize(Sender: TObject);
         procedure PanelBarButtonClick (Sender: TObject);
         private
             IndexTool: integer;
@@ -52,7 +55,7 @@ procedure TDesk.PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
     Y: Integer);
 begin
     if (ssLeft in Shift) and (IsMouseDown) then begin
-        Tools[IndexTool].StartDrawing(point(x,y));
+        Tools[IndexTool].StartDrawing(point(X,y));
         Invalidate;
     end;
 end;
@@ -62,6 +65,11 @@ procedure TDesk.PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
 begin
   if (Button = mbLeft) then
       IsMouseDown := False;
+end;
+
+procedure TDesk.PaintDeskResize(Sender: TObject);
+begin
+    ViewPort.PaintBoxResize(PaintDesk.Width / 2, PaintDesk.Height / 2);
 end;
 
 
@@ -88,7 +96,9 @@ var
     i: integer;
 begin
     IndexTool:= 0;
+    ViewPort := TViewPort.Create(PaintDesk.Width / 2, PaintDesk.Height / 2);
     DrawContinue:= false;
+    ViewPort.AddDisplacement(PaintDesk.Width / 2, PaintDesk.Height / 2);
     ToolsBar.Images := ToolsImages;
     IsMouseDown:= false;
     for i := 0 to High(Tools) do begin
@@ -106,6 +116,9 @@ var
     figure: TFigure;
 begin
     PaintDesk.Canvas.brush.style := bsClear;
+    // вывод положения центра ViewPoint
+    YcoordinateText.Caption:= FloatToStr(ViewPort.FCenter.y);
+    XcoordinateText.Caption:= FloatToStr(ViewPort.FCenter.x);
     for figure in Figures do
         figure.Draw(PaintDesk.Canvas);
 end;
@@ -115,12 +128,12 @@ procedure TDesk.PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
     Shift: TShiftState; X, Y: Integer);
 begin
     if (Button = mbLeft) then begin
-        Tools[IndexTool].AddFigure(Point(x,y));
+        Tools[IndexTool].AddFigure(Point(X,y));
         DrawContinue:= true;
         IsMouseDown:= true;
     end
     else if (Button = mbRight) and (DrawContinue) then
-        Tools[IndexTool].AdditionalDraw(Point(x,y));
+        Tools[IndexTool].AdditionalDraw(Point(X,y));
     Invalidate;
 end;
 

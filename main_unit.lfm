@@ -1,17 +1,17 @@
 object Desk: TDesk
-  Left = 490
+  Left = 423
   Height = 414
-  Top = 324
+  Top = 215
   Width = 581
   Caption = 'Desk'
-  ClientHeight = 394
+  ClientHeight = 414
   ClientWidth = 581
   Menu = MainMenu
   OnCreate = FormCreate
-  LCLVersion = '1.4.4.0'
+  LCLVersion = '1.0.10.0'
   object PaintDesk: TPaintBox
     Left = 50
-    Height = 394
+    Height = 414
     Top = 0
     Width = 531
     Align = alClient
@@ -19,10 +19,11 @@ object Desk: TDesk
     OnMouseMove = PaintDeskMouseMove
     OnMouseUp = PaintDeskMouseUp
     OnPaint = FormPaint
+    OnResize = PaintDeskResize
   end
   object ToolsBar: TToolBar
     Left = 0
-    Height = 394
+    Height = 414
     Top = 0
     Width = 50
     Align = alLeft
@@ -31,6 +32,22 @@ object Desk: TDesk
     Color = clWindow
     ParentColor = False
     TabOrder = 0
+  end
+  object XcoordinateText: TStaticText
+    Left = 0
+    Height = 25
+    Top = 352
+    Width = 65
+    Caption = 'XcoordinateText'
+    TabOrder = 1
+  end
+  object YcoordinateText: TStaticText
+    Left = 0
+    Height = 24
+    Top = 376
+    Width = 65
+    Caption = 'YcoordinateText'
+    TabOrder = 2
   end
   object MainMenu: TMainMenu
     left = 60

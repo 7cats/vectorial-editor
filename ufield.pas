@@ -37,14 +37,14 @@ implementation
 
 function TViewPort.WorldToScreen(fpoint: TFloatPoint): TPoint;
 begin
-    WorldToScreen.X := round((fpoint.x - (FCenter.x - FPaintBoxCenterX)) / FZoom);
-    WorldToScreen.Y := round((fpoint.y - (FCenter.y - FPaintBoxCenterY)) / FZoom);
+    WorldToScreen.X := round((fpoint.x - (FPaintBoxCenterX - FCenter.x)) / FZoom);
+    WorldToScreen.Y := round((fpoint.y - (FPaintBoxCenterY - FCenter.y)) / FZoom);
 end;
 
 function TViewPort.ScreenToWorld(point: TPoint): TFloatPoint;
 begin
-    ScreenToWorld.x := point.x * FZoom + (FCenter.x - FPaintBoxCenterX);
-    ScreenToWorld.y := point.y * FZoom + (FCenter.y - FPaintBoxCenterY);
+    ScreenToWorld.x := point.x * FZoom + (FPaintBoxCenterX - FCenter.x);
+    ScreenToWorld.y := point.y * FZoom + (FPaintBoxCenterY - FCenter.y);
 end;
 
 constructor TViewPort.Create(width, height: double);

@@ -63,8 +63,11 @@ end;
 procedure TDesk.PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if (Button = mbLeft) then
+  if (Button = mbLeft) then begin
       IsMouseDown := False;
+      Tools[IndexTool].SpecificAction(point(X,Y), Desk.Width, Desk.Height);
+  end;
+  Invalidate;
 end;
 
 procedure TDesk.PaintDeskResize(Sender: TObject);
@@ -133,6 +136,9 @@ begin
         IsMouseDown:= true;
     end
     else if (Button = mbRight) and (DrawContinue) then
+        Tools[IndexTool].AdditionalAction(Point(X,y));
+
+    if (Button = mbRight) and (Tools[IndexTool].FName = 'zoom') then
         Tools[IndexTool].AdditionalAction(Point(X,y));
     Invalidate;
 end;

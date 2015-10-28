@@ -6,7 +6,7 @@ interface
 
 uses
     Classes, SysUtils, UFigures, Forms, Controls, Graphics, Dialogs,
-    UField;
+    UField, Math;
 
 type
 
@@ -17,6 +17,9 @@ type
         constructor Create(name : string);
         procedure MakeActive(point : TPoint); virtual; abstract;
         procedure AdditionalAction(point : TPoint); virtual;
+        procedure SpecificAction(point : TPoint; w, h: integer); virtual;
+        public
+            FName: string;
     end;
 
     { TPencilTool }
@@ -52,11 +55,26 @@ type
         procedure MakeActive(point : TPoint); override;
     end;
 
+    {THandTool}
+
     THandTool = class(TTool)
         private
             FBeginCoordinate: TPoint;
             procedure MakeActive(point : TPoint); override;
             procedure ToolMove(point : TPoint); override;
+    end;
+
+    { TZoomTool }
+
+    TZoomTool = class(TTool)
+        procedure MakeActive(point : TPoint); override;
+        procedure ToolMove(point : TPoint); override;
+        procedure AdditionalAction(point: TPoint); override;
+        procedure SpecificAction(point : TPoint; w, h: integer); override;
+        procedure ClickZoom ();
+        procedure RectClick (w, h: integer);
+        private
+            FBeginZoomRect, FEndZoomRect: TFloatPoint;
     end;
 
 var
@@ -69,6 +87,53 @@ procedure AddTool(tool : TTool);
 begin
     SetLength(Tools, Length(Tools) + 1);
     Tools[High(Tools)] := tool;
+end;
+
+{ TZoomTool }
+
+procedure TZoomTool.MakeActive(point: TPoint);
+begin
+    SetLength(Figures, Length(Figures) + 1);
+    Figures[High(Figures)] := TRectangle.Create(point);
+    FBeginZoomRect := ViewPort.ScreenToWorld(point);
+end;
+
+procedure TZoomTool.ToolMove(point: TPoint);
+begin
+    Figures[High(Figures)].Stranch(point);
+end;
+
+procedure TZoomTool.AdditionalAction(point: TPoint);
+begin
+    ViewPort.FZoom := max(0.01, ViewPort.FZoom - 0.09);
+end;
+
+procedure TZoomTool.SpecificAction(point: TPoint; w, h: integer);
+begin
+    FEndZoomRect := ViewPort.ScreenToWorld(point);
+    SetLength(Figures, Length(Figures) - 1);
+
+    if (sqrt(sqr(FEndZoomRect.X - FBeginZoomRect.X) + sqr(FEndZoomRect.Y - FBeginZoomRect.Y)) < 10) then
+        ClickZoom()
+    else
+        RectClick(w, h);
+end;
+
+procedure TZoomTool.ClickZoom;
+begin
+    ViewPort.AddDisplacement(ViewPort.FCenter.X - FBeginZoomRect.X,
+                             ViewPort.FCenter.Y - FBeginZoomRect.Y);
+    ViewPort.FZoom += 0.5;
+end;
+
+procedure TZoomTool.RectClick(w, h: integer);
+begin
+    ViewPort.AddDisplacement(ViewPort.FCenter.X - (FBeginZoomRect.X + FEndZoomRect.X) / 2,
+                             ViewPort.FCenter.Y - (FBeginZoomRect.Y + FEndZoomRect.Y) / 2);
+    if (w / abs(FEndZoomRect.X - FBeginZoomRect.X) > h / abs(FEndZoomRect.Y - FBeginZoomRect.Y)) then
+        ViewPort.FZoom *= h /  abs(FEndZoomRect.Y - FBeginZoomRect.Y)
+    else
+        ViewPort.FZoom *= w / abs(FEndZoomRect.X - FBeginZoomRect.X)
 end;
 
 { THandTool }
@@ -146,12 +211,17 @@ constructor TTool.Create(name: string);
 var
     i : TIcon;
 begin
+    FName:= name;
     i := TIcon.Create;
     i.LoadFromFile('IconPanel/' + name + '.ico');
     ToolsImages.AddIcon(i);
 end;
 
 procedure TTool.AdditionalAction(point: TPoint);
+begin
+end;
+
+procedure TTool.SpecificAction(point: TPoint; w, h: integer);
 begin
 end;
 
@@ -165,5 +235,6 @@ initialization
     AddTool(TRecnungleTool.Create('rectungle'));
     AddTool(TRoundRectangleTool.Create('roundrect'));
     AddTool(THandTool.Create('hand'));
+    AddTool(TZoomTool.Create('zoom'));
 end.
 

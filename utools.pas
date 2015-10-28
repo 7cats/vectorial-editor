@@ -123,7 +123,7 @@ procedure TZoomTool.ClickZoom;
 begin
     ViewPort.AddDisplacement(ViewPort.FCenter.X - FBeginZoomRect.X,
                              ViewPort.FCenter.Y - FBeginZoomRect.Y);
-    ViewPort.FZoom += 0.5;
+    ViewPort.FZoom += 0.09;
 end;
 
 procedure TZoomTool.RectClick(w, h: integer);

@@ -37,19 +37,19 @@ implementation
 
 function TViewPort.WorldToScreen(fpoint: TFloatPoint): TPoint;
 begin
-    WorldToScreen.X := round((fpoint.x - (FPaintBoxCenterX - FCenter.x)) / FZoom);
-    WorldToScreen.Y := round((fpoint.y - (FPaintBoxCenterY - FCenter.y)) / FZoom);
+    WorldToScreen.X := round(FPaintBoxCenterX + (fpoint.X - FCenter.X) * FZoom);
+    WorldToScreen.Y := round(FPaintBoxCenterY + (fpoint.Y - FCenter.Y) * FZoom);
 end;
 
 function TViewPort.ScreenToWorld(point: TPoint): TFloatPoint;
 begin
-    ScreenToWorld.x := point.x * FZoom + (FPaintBoxCenterX - FCenter.x);
-    ScreenToWorld.y := point.y * FZoom + (FPaintBoxCenterY - FCenter.y);
+    ScreenToWorld.X := FCenter.X + (point.X - FPaintBoxCenterX) / FZoom;
+    ScreenToWorld.Y := FCenter.Y + (point.Y - FPaintBoxCenterY) / FZoom;
 end;
 
 constructor TViewPort.Create(width, height: double);
 begin
-    FCenter.x := 0;
+    FCenter.x:= 0;
     FCenter.y := 0;
     FZoom := 1;
     FPaintBoxCenterY:= height;
@@ -59,8 +59,8 @@ end;
 
 procedure TViewPort.AddDisplacement(dispacementX, dispacementY: extended);
 begin
-    FCenter.x += dispacementX;
-    FCenter.y += dispacementY;
+    FCenter.x -= dispacementX;
+    FCenter.y -= dispacementY;
 end;
 
 procedure TViewPort.CalcAndAddDisplacement(oldPoint, newPoint: TPoint);

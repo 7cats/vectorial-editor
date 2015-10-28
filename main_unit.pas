@@ -6,7 +6,7 @@ interface
 
 uses
     Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
-    ExtCtrls, Menus, ComCtrls, StdCtrls, UTools, UFigures, UField;
+    ExtCtrls, Menus, ComCtrls, StdCtrls, DbCtrls, UTools, UFigures, UField, Math;
 
 type
 
@@ -18,6 +18,8 @@ type
         ExitMItem: TMenuItem;
         HelpMenu: TMenuItem;
         AboutMItem: TMenuItem;
+        ToolMenu: TMenuItem;
+        ShowAllItem: TMenuItem;
         PaintDesk: TPaintBox;
         XcoordinateText: TStaticText;
         YcoordinateText: TStaticText;
@@ -34,6 +36,7 @@ type
           Shift: TShiftState; X, Y: Integer);
         procedure PaintDeskResize(Sender: TObject);
         procedure PanelBarButtonClick (Sender: TObject);
+        procedure ShowAllItemClick(Sender: TObject);
         private
             IndexTool: integer;
             DrawContinue, IsMouseDown : boolean;
@@ -82,6 +85,12 @@ begin
     DrawContinue:= false;
 end;
 
+procedure TDesk.ShowAllItemClick(Sender: TObject);
+begin
+    ViewPort.ShowAll(PaintDesk.Width, PaintDesk.Height);
+    Invalidate;
+end;
+
 
 procedure TDesk.AboutMItemClick(Sender: TObject);
 begin
@@ -104,6 +113,7 @@ begin
     ViewPort.AddDisplacement(PaintDesk.Width / 2, PaintDesk.Height / 2);
     ToolsBar.Images := ToolsImages;
     IsMouseDown:= false;
+    ShowAllItem.Enabled:= false;
     for i := 0 to High(Tools) do begin
         button := TToolButton.Create(self);
         button.Parent := ToolsBar;
@@ -122,8 +132,23 @@ begin
     // вывод положения центра ViewPoint
     YcoordinateText.Caption:= FloatToStr(ViewPort.FCenter.y);
     XcoordinateText.Caption:= FloatToStr(ViewPort.FCenter.x);
-    for figure in Figures do
+    if (Length(Figures) > 0) then begin
+       ShowAllItem.Enabled := true;
+       ViewPort.FTopBoarder := Figures[0].FPoints[0].y;
+       ViewPort.FBottomBoarder := Figures[0].FPoints[0].y;
+       ViewPort.FLeftBoarder := Figures[0].FPoints[0].x;
+       ViewPort.FRightBoarder := Figures[0].FPoints[0].x;
+    end
+    else
+       ShowAllItem.Enabled := false;
+
+    for figure in Figures do begin
         figure.Draw(PaintDesk.Canvas);
+        ViewPort.FRightBoarder := max(ViewPort.FRightBoarder, figure.MaxX);
+        ViewPort.FLeftBoarder := min(ViewPort.FLeftBoarder, figure.MinX);
+        ViewPort.FTopBoarder := min(ViewPort.FTopBoarder, figure.MinY);
+        ViewPort.FBottomBoarder := max(ViewPort.FBottomBoarder, figure.MaxY);
+    end;
 end;
 
 

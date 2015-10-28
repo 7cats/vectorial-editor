@@ -13,8 +13,12 @@ type
         FPoints: array of TFloatPoint;
         procedure AddPoint(point: TPoint);
         procedure Draw(ACanvas: TCanvas); virtual; abstract;
-        procedure Stranch (point: TPoint) virtual; abstract;
+        procedure Stranch (point: TPoint); virtual; abstract;
         constructor Create(point: TPoint);
+        function MaxX() : extended;
+        function MinX() : extended;
+        function MaxY() : extended;
+        function MinY() : extended;
     end;
 
     { TPencil }
@@ -101,6 +105,55 @@ begin
     AddPoint(Point);
     AddPoint(Point);
 end;
+
+function TFigure.MaxX: extended;
+var
+    tmp: extended;
+    i: integer;
+begin
+    tmp := FPoints[0].x;
+    for i := 1 to High(FPoints) do
+        if (tmp < FPoints[i].x) then
+           tmp := FPoints[i].x;
+    result := tmp;
+end;
+
+function TFigure.MinX: extended;
+var
+    tmp: extended;
+    i: integer;
+begin
+    tmp := FPoints[0].x;
+    for i := 1 to High(FPoints) do
+        if (tmp > FPoints[i].x) then
+           tmp := FPoints[i].x;
+    result := tmp;
+end;
+
+function TFigure.MaxY: extended;
+var
+    tmp: extended;
+    i: integer;
+begin
+    tmp := FPoints[0].y;
+    for i := 1 to High(FPoints) do
+        if (tmp < FPoints[i].y) then
+           tmp := FPoints[i].y;
+    result := tmp;
+end;
+
+function TFigure.MinY: extended;
+var
+    tmp: extended;
+    i: integer;
+begin
+    tmp := FPoints[0].y;
+    for i := 1 to High(FPoints) do
+        if (tmp > FPoints[i].y) then
+           tmp := FPoints[i].y;
+    result := tmp;
+end;
+
 
 { TPencil }
 

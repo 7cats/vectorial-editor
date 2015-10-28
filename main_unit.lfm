@@ -1,10 +1,10 @@
 object Desk: TDesk
-  Left = 293
-  Height = 640
-  Top = 79
+  Left = 386
+  Height = 647
+  Top = 93
   Width = 883
   Caption = 'Desk'
-  ClientHeight = 640
+  ClientHeight = 647
   ClientWidth = 883
   Menu = MainMenu
   OnCreate = FormCreate
@@ -12,10 +12,10 @@ object Desk: TDesk
   ShowHint = True
   LCLVersion = '1.0.10.0'
   object PaintDesk: TPaintBox
-    Left = 50
-    Height = 640
-    Top = 0
-    Width = 833
+    Left = 0
+    Height = 597
+    Top = 50
+    Width = 883
     Align = alClient
     OnMouseDown = PaintDeskMouseDown
     OnMouseMove = PaintDeskMouseMove
@@ -25,10 +25,9 @@ object Desk: TDesk
   end
   object ToolsBar: TToolBar
     Left = 0
-    Height = 640
+    Height = 50
     Top = 0
-    Width = 50
-    Align = alLeft
+    Width = 883
     ButtonHeight = 48
     ButtonWidth = 48
     Color = clWindow
@@ -52,12 +51,19 @@ object Desk: TDesk
     TabOrder = 2
   end
   object MainMenu: TMainMenu
-    top = 8
     object FileMenu: TMenuItem
       Caption = 'Файл'
       object ExitMItem: TMenuItem
         Caption = 'Выход'
         OnClick = ExitItemClick
+      end
+    end
+    object ToolMenu: TMenuItem
+      Caption = 'Инструменты'
+      object ShowAllItem: TMenuItem
+        Caption = 'Показать все изображение'
+        Enabled = False
+        OnClick = ShowAllItemClick
       end
     end
     object HelpMenu: TMenuItem

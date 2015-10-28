@@ -5,7 +5,7 @@ unit UField;
 interface
 
 uses
-    Classes, SysUtils;
+    Classes, SysUtils, Math;
 
 type
 
@@ -17,7 +17,7 @@ type
 
     TViewPort = class
         FCenter: TFloatPoint;
-        FDisplacement, FZoom: extended;
+        FDisplacement, FZoom, FLeftBoarder, FRightBoarder, FBottomBoarder, FTopBoarder: extended;
         FPaintBoxCenterX, FPaintBoxCenterY: double;
         constructor Create(width, height: double);
         function WorldToScreen(fpoint: TFloatPoint): TPoint;
@@ -25,6 +25,7 @@ type
         procedure AddDisplacement(dispacementX, dispacementY: extended);
         procedure CalcAndAddDisplacement(oldPoint, newPoint: TPoint);
         procedure PaintBoxResize(BoxCentreX, BoxCentreY: double);
+        procedure ShowAll (w,h:integer);
     end;
 
 var
@@ -74,6 +75,14 @@ begin
     FCenter.y += boxCentreY - FPaintBoxCenterY;
     FPaintBoxCenterX := boxCentreX;
     FPaintBoxCenterY := boxCentreY;
+end;
+
+procedure TViewPort.ShowAll(w, h: integer);
+begin
+    ViewPort.FCenter.x := (FRightBoarder + FLeftBoarder) / 2;
+    ViewPort.FCenter.y := (FTopBoarder + FBottomBoarder) / 2;
+    ViewPort.FZoom := min(h / (FBottomBoarder  - FTopBoarder + 1),
+                          w / (FRightBoarder - FLeftBoarder + 1))
 end;
 
 end.

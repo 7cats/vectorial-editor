@@ -11,49 +11,49 @@ type
     { TTool }
 
     TTool = class
-        procedure StartDrawing (point : TPoint); virtual; abstract;
+        procedure ToolMove(point : TPoint); virtual; abstract;
         constructor Create(name : string);
-        procedure AddFigure(point : TPoint); virtual; abstract;
-        procedure AdditionalDraw(point : TPoint); virtual;
+        procedure MakeActive(point : TPoint); virtual; abstract;
+        procedure AdditionalAction(point : TPoint); virtual;
     end;
 
     { TPencilTool }
 
     TPencilTool = class(TTool)
-        procedure AddFigure(point : TPoint); override;
-        procedure StartDrawing (point : TPoint); override;
+        procedure MakeActive(point : TPoint); override;
+        procedure ToolMove (point : TPoint); override;
     end;
 
     { TPolylineTool }
 
     TPolylineTool = class(TTool)
-        procedure AddFigure(point : TPoint); override;
-        procedure StartDrawing (point : TPoint); override;
-        procedure AdditionalDraw (point : TPoint); override;
+        procedure MakeActive(point : TPoint); override;
+        procedure ToolMove (point : TPoint); override;
+        procedure AdditionalAction (point : TPoint); override;
     end;
 
     { TEllipseTool }
 
     TEllipseTool = class(TPolylineTool)
-        procedure AddFigure(point : TPoint); override;
+        procedure MakeActive(point : TPoint); override;
     end;
 
     { TRecnungleTool }
 
     TRecnungleTool = class(TPolylineTool)
-        procedure AddFigure(point : TPoint); override;
+        procedure MakeActive(point : TPoint); override;
     end;
 
     { TRoundRectangleTool }
 
     TRoundRectangleTool = class(TRecnungleTool)
-        procedure AddFigure(point : TPoint); override;
+        procedure MakeActive(point : TPoint); override;
     end;
-
 
 var
     Tools: array of TTool;
     ToolsImages: TImageList;
+
 implementation
 
 procedure AddTool(tool : TTool);
@@ -64,25 +64,25 @@ end;
 
 { TPolylineTool }
 
-procedure TPolylineTool.AddFigure(point: TPoint);
+procedure TPolylineTool.MakeActive(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TPolyline.Create(point);
 end;
 
-procedure TPolylineTool.StartDrawing(point: TPoint);
+procedure TPolylineTool.ToolMove(point: TPoint);
 begin
     Figures[High(Figures)].Stranch(point);
 end;
 
-procedure TPolylineTool.AdditionalDraw(point: TPoint);
+procedure TPolylineTool.AdditionalAction(point: TPoint);
 begin
     Figures[High(Figures)].AddPoint(point);
 end;
 
 { TRoundRectangleTool }
 
-procedure TRoundRectangleTool.AddFigure(point: TPoint);
+procedure TRoundRectangleTool.MakeActive(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TRoundRectangle.Create(point);
@@ -90,7 +90,7 @@ end;
 
 { TRecnungleTool }
 
-procedure TRecnungleTool.AddFigure(point: TPoint);
+procedure TRecnungleTool.MakeActive(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TRectangle.Create(point);
@@ -99,7 +99,7 @@ end;
 
 { TEllipseTool }
 
-procedure TEllipseTool.AddFigure(point: TPoint);
+procedure TEllipseTool.MakeActive(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TEllipse.Create(point);
@@ -107,13 +107,13 @@ end;
 
 { TPencilTool }
 
-procedure TPencilTool.AddFigure(point: TPoint);
+procedure TPencilTool.MakeActive(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TPencil.Create(point);
 end;
 
-procedure TPencilTool.StartDrawing(point: TPoint);
+procedure TPencilTool.ToolMove(point: TPoint);
 begin
     Figures[High(Figures)].AddPoint(point);
 end;
@@ -129,7 +129,7 @@ begin
     ToolsImages.AddIcon(i);
 end;
 
-procedure TTool.AdditionalDraw(point: TPoint);
+procedure TTool.AdditionalAction(point: TPoint);
 begin
 end;
 

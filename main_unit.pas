@@ -55,7 +55,7 @@ procedure TDesk.PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
     Y: Integer);
 begin
     if (ssLeft in Shift) and (IsMouseDown) then begin
-        Tools[IndexTool].StartDrawing(point(X,y));
+        Tools[IndexTool].ToolMove(point(X,y));
         Invalidate;
     end;
 end;
@@ -128,12 +128,12 @@ procedure TDesk.PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
     Shift: TShiftState; X, Y: Integer);
 begin
     if (Button = mbLeft) then begin
-        Tools[IndexTool].AddFigure(Point(X,y));
+        Tools[IndexTool].MakeActive(Point(X,y));
         DrawContinue:= true;
         IsMouseDown:= true;
     end
     else if (Button = mbRight) and (DrawContinue) then
-        Tools[IndexTool].AdditionalDraw(Point(X,y));
+        Tools[IndexTool].AdditionalAction(Point(X,y));
     Invalidate;
 end;
 

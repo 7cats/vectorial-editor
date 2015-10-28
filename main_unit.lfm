@@ -8,6 +8,7 @@ object Desk: TDesk
   ClientWidth = 581
   Menu = MainMenu
   OnCreate = FormCreate
+  OnMouseUp = PaintDeskMouseUp
   LCLVersion = '1.0.10.0'
   object PaintDesk: TPaintBox
     Left = 50

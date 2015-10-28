@@ -59,7 +59,7 @@ type
 
     THandTool = class(TTool)
         private
-            FBeginCoordinate: TPoint;
+            FBeginCoordinate: TFloatPoint;
             procedure MakeActive(point : TPoint); override;
             procedure ToolMove(point : TPoint); override;
     end;
@@ -140,13 +140,14 @@ end;
 
 procedure THandTool.MakeActive(point: TPoint);
 begin
-    FBeginCoordinate:= point;
+    FBeginCoordinate:= ViewPort.ScreenToWorld(point);
 end;
 
 procedure THandTool.ToolMove(point: TPoint);
 begin
-    ViewPort.AddDisplacement(point.x - FBeginCoordinate.x, point.y - FBeginCoordinate.y);
-    FBeginCoordinate:= point;
+    ViewPort.AddDisplacement(ViewPort.ScreenToWorld(point).x - FBeginCoordinate.x,
+                             ViewPort.ScreenToWorld(point).y - FBeginCoordinate.y);
+    FBeginCoordinate:= ViewPort.ScreenToWorld(point);
 end;
 
 { TPolylineTool }

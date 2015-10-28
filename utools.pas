@@ -5,7 +5,9 @@ unit UTools;
 interface
 
 uses
-    Classes, SysUtils, UFigures, Forms, Controls, Graphics, Dialogs;
+    Classes, SysUtils, UFigures, Forms, Controls, Graphics, Dialogs,
+    UField;
+
 type
 
     { TTool }
@@ -50,6 +52,13 @@ type
         procedure MakeActive(point : TPoint); override;
     end;
 
+    THandTool = class(TTool)
+        private
+            FBeginCoordinate: TPoint;
+            procedure MakeActive(point : TPoint); override;
+            procedure ToolMove(point : TPoint); override;
+    end;
+
 var
     Tools: array of TTool;
     ToolsImages: TImageList;
@@ -60,6 +69,19 @@ procedure AddTool(tool : TTool);
 begin
     SetLength(Tools, Length(Tools) + 1);
     Tools[High(Tools)] := tool;
+end;
+
+{ THandTool }
+
+procedure THandTool.MakeActive(point: TPoint);
+begin
+    FBeginCoordinate:= point;
+end;
+
+procedure THandTool.ToolMove(point: TPoint);
+begin
+    ViewPort.AddDisplacement(point.x - FBeginCoordinate.x, point.y - FBeginCoordinate.y);
+    FBeginCoordinate:= point;
 end;
 
 { TPolylineTool }
@@ -142,5 +164,6 @@ initialization
     AddTool(TEllipseTool.Create('ellipse'));
     AddTool(TRecnungleTool.Create('rectungle'));
     AddTool(TRoundRectangleTool.Create('roundrect'));
+    AddTool(THandTool.Create('hand'));
 end.
 

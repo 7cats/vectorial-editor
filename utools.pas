@@ -130,10 +130,8 @@ procedure TZoomTool.RectClick(w, h: integer);
 begin
     ViewPort.AddDisplacement(ViewPort.FCenter.X - (FBeginZoomRect.X + FEndZoomRect.X) / 2,
                              ViewPort.FCenter.Y - (FBeginZoomRect.Y + FEndZoomRect.Y) / 2);
-    if (w / abs(FEndZoomRect.X - FBeginZoomRect.X) > h / abs(FEndZoomRect.Y - FBeginZoomRect.Y)) then
-        ViewPort.FZoom *= h /  abs(FEndZoomRect.Y - FBeginZoomRect.Y)
-    else
-        ViewPort.FZoom *= w / abs(FEndZoomRect.X - FBeginZoomRect.X)
+    ViewPort.FZoom *= min(h / abs(ViewPort.WorldToScreen(FEndZoomRect).Y  - ViewPort.WorldToScreen(FBeginZoomRect).Y),
+                          w / abs(ViewPort.WorldToScreen(FEndZoomRect).X  - ViewPort.WorldToScreen(FBeginZoomRect).X));
 end;
 
 { THandTool }

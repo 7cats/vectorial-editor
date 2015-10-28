@@ -65,7 +65,7 @@ procedure TDesk.PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
 begin
   if (Button = mbLeft) then begin
       IsMouseDown := False;
-      Tools[IndexTool].SpecificAction(point(X,Y), Desk.Width, Desk.Height);
+      Tools[IndexTool].SpecificAction(point(X,Y), PaintDesk.Width, PaintDesk.Height);
   end;
   Invalidate;
 end;

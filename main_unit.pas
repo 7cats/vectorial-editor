@@ -24,6 +24,7 @@ type
         XcoordinateText: TStaticText;
         YcoordinateText: TStaticText;
         ToolsBar: TToolBar;
+        ZoomBox: TComboBox;
         procedure AboutMItemClick(Sender: TObject);
         procedure ExitItemClick(Sender: TObject);
         procedure FormCreate(Sender: TObject);
@@ -37,6 +38,8 @@ type
         procedure PaintDeskResize(Sender: TObject);
         procedure PanelBarButtonClick (Sender: TObject);
         procedure ShowAllItemClick(Sender: TObject);
+        procedure ChangeComboBox(Sender: TObject);
+        function IsFloat(str :string): boolean;
         private
             IndexTool: integer;
             DrawContinue, IsMouseDown : boolean;
@@ -97,6 +100,31 @@ begin
     ShowMessage('Разумов Максим, Б8103а, 2015 г.');
 end;
 
+procedure TDesk.ChangeComboBox(Sender: TObject);
+begin
+    if (IsFloat((Sender as TComboBox).Caption)) then begin
+        ViewPort.FZoom:= StrToFloat((Sender as TComboBox).Caption) / 100;
+    end;
+    Invalidate;
+end;
+
+function TDesk.IsFloat(str: string): boolean;
+var
+    i, count: integer;
+begin
+    count := 0;
+    for i := 0 to Length(str) do begin
+        if (str = '.') then
+            inc(count);
+        if ((str[i] < '0') and (str > '9') and (str <> '.')) then begin
+            result := false;
+            exit();
+        end;
+    end;
+    if (count <= 1) then
+        exit(true);
+end;
+
 procedure TDesk.ExitItemClick(Sender: TObject);
 begin
     Close;
@@ -121,6 +149,20 @@ begin
         button.ImageIndex:= i;
         button.OnClick := @PanelBarButtonClick;
     end;
+    ZoomBox := TComboBox.Create(self);
+    ZoomBox.Name:= 'ZoomBox';
+    ZoomBox.Parent := ToolsBar;
+    ZoomBox.AddItem('500', ZoomBox);
+    ZoomBox.AddItem('250', ZoomBox);
+    ZoomBox.AddItem('100', ZoomBox);
+    ZoomBox.AddItem('75', ZoomBox);
+    ZoomBox.AddItem('50', ZoomBox);
+    ZoomBox.AddItem('25', ZoomBox);
+    ZoomBox.AddItem('1', ZoomBox);
+    ZoomBox.Caption:='100';
+    ZoomBox.TabStop:= true;
+    ZoomBox.OnEditingDone:= @ChangeComboBox;
+
 end;
 
 
@@ -141,7 +183,7 @@ begin
     end
     else
        ShowAllItem.Enabled := false;
-
+    ZoomBox.Caption := FloatToStr(round(ViewPort.FZoom * 10000) / 100);
     for figure in Figures do begin
         figure.Draw(PaintDesk.Canvas);
         ViewPort.FRightBoarder := max(ViewPort.FRightBoarder, figure.MaxX);

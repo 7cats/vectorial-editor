@@ -1,5 +1,5 @@
 object Desk: TDesk
-  Left = 386
+  Left = 454
   Height = 647
   Top = 93
   Width = 883

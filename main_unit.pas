@@ -111,7 +111,7 @@ end;
 
 procedure TDesk.ChangeComboBox(Sender: TObject);
 begin
-    if (IsFloat((Sender as TComboBox).Caption)) then begin
+    if (IsFloat((Sender as TComboBox).Caption) and (StrToFloat((Sender as TComboBox).Caption) > 0)) then begin
         ViewPort.FZoom:= StrToFloat((Sender as TComboBox).Caption) / 100;
     end;
     Invalidate;
@@ -171,7 +171,6 @@ begin
     ZoomBox.Caption:='100';
     ZoomBox.TabStop:= true;
     ZoomBox.OnEditingDone:= @ChangeComboBox;
-
 end;
 
 

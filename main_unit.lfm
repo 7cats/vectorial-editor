@@ -65,6 +65,10 @@ object Desk: TDesk
         Enabled = False
         OnClick = ShowAllItemClick
       end
+      object ClearCanvasItem: TMenuItem
+        Caption = 'Очистить лист'
+        OnClick = ClearCanvasItemClick
+      end
     end
     object HelpMenu: TMenuItem
       Caption = 'Помощь'

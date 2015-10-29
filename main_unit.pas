@@ -18,6 +18,7 @@ type
         ExitMItem: TMenuItem;
         HelpMenu: TMenuItem;
         AboutMItem: TMenuItem;
+        ClearCanvasItem: TMenuItem;
         ToolMenu: TMenuItem;
         ShowAllItem: TMenuItem;
         PaintDesk: TPaintBox;
@@ -26,6 +27,7 @@ type
         ToolsBar: TToolBar;
         ZoomBox: TComboBox;
         procedure AboutMItemClick(Sender: TObject);
+        procedure ClearCanvasItemClick(Sender: TObject);
         procedure ExitItemClick(Sender: TObject);
         procedure FormCreate(Sender: TObject);
         procedure FormPaint(Sender: TObject);
@@ -98,6 +100,13 @@ end;
 procedure TDesk.AboutMItemClick(Sender: TObject);
 begin
     ShowMessage('Разумов Максим, Б8103а, 2015 г.');
+end;
+
+procedure TDesk.ClearCanvasItemClick(Sender: TObject);
+begin
+    SetLength(Figures, 0);
+    ViewPort:= TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
+    Invalidate;
 end;
 
 procedure TDesk.ChangeComboBox(Sender: TObject);

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
     <Version Value="9"/>
@@ -51,17 +51,14 @@
       <Unit2>
         <Filename Value="utools.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UTools"/>
       </Unit2>
       <Unit3>
         <Filename Value="ufigures.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UFigures"/>
       </Unit3>
       <Unit4>
         <Filename Value="ufield.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UField"/>
       </Unit4>
     </Units>
   </ProjectOptions>
@@ -81,9 +78,6 @@
         </Win32>
       </Options>
     </Linking>
-    <Other>
-      <CompilerPath Value="$(CompPath)"/>
-    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">

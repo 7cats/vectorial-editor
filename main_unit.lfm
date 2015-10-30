@@ -4,18 +4,18 @@ object Desk: TDesk
   Top = 93
   Width = 883
   Caption = 'Desk'
-  ClientHeight = 647
+  ClientHeight = 627
   ClientWidth = 883
   Menu = MainMenu
   OnCreate = FormCreate
   OnMouseUp = PaintDeskMouseUp
   ShowHint = True
-  LCLVersion = '1.0.10.0'
+  LCLVersion = '1.4.0.4'
   object PaintDesk: TPaintBox
     Left = 0
-    Height = 597
+    Height = 560
     Top = 50
-    Width = 883
+    Width = 866
     Align = alClient
     OnMouseDown = PaintDeskMouseDown
     OnMouseMove = PaintDeskMouseMove
@@ -35,20 +35,39 @@ object Desk: TDesk
     TabOrder = 0
   end
   object XcoordinateText: TStaticText
-    Left = 0
+    Left = 10
     Height = 25
-    Top = 568
+    Top = 560
     Width = 65
     Caption = 'XcoordinateText'
     TabOrder = 1
   end
   object YcoordinateText: TStaticText
-    Left = 0
+    Left = 10
     Height = 24
-    Top = 600
+    Top = 586
     Width = 65
     Caption = 'YcoordinateText'
     TabOrder = 2
+  end
+  object ScrollBar1: TScrollBar
+    Left = 0
+    Height = 17
+    Top = 610
+    Width = 883
+    Align = alBottom
+    PageSize = 0
+    TabOrder = 3
+  end
+  object ScrollBar2: TScrollBar
+    Left = 866
+    Height = 560
+    Top = 50
+    Width = 17
+    Align = alRight
+    Kind = sbVertical
+    PageSize = 0
+    TabOrder = 4
   end
   object MainMenu: TMainMenu
     object FileMenu: TMenuItem

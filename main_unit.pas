@@ -19,6 +19,8 @@ type
         HelpMenu: TMenuItem;
         AboutMItem: TMenuItem;
         ClearCanvasItem: TMenuItem;
+        ScrollBar1: TScrollBar;
+        ScrollBar2: TScrollBar;
         ToolMenu: TMenuItem;
         ShowAllItem: TMenuItem;
         PaintDesk: TPaintBox;

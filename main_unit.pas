@@ -63,7 +63,7 @@ procedure TDesk.PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
     Y: Integer);
 begin
     if (ssLeft in Shift) and (IsMouseDown) then begin
-        Tools[IndexTool].ToolMove(point(X,y));
+        Tools[IndexTool].MouseMove(point(X,y));
         Invalidate;
     end;
 end;
@@ -73,14 +73,14 @@ procedure TDesk.PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
 begin
   if (Button = mbLeft) then begin
       IsMouseDown := False;
-      Tools[IndexTool].SpecificAction(point(X,Y), PaintDesk.Width, PaintDesk.Height);
+      Tools[IndexTool].Deactive(point(X,Y));
   end;
   Invalidate;
 end;
 
 procedure TDesk.PaintDeskResize(Sender: TObject);
 begin
-    ViewPort.PaintBoxResize(PaintDesk.Width / 2, PaintDesk.Height / 2);
+    ViewPort.PaintBoxResize(PaintDesk.Width, PaintDesk.Height);
 end;
 
 
@@ -92,7 +92,7 @@ end;
 
 procedure TDesk.ShowAllItemClick(Sender: TObject);
 begin
-    ViewPort.ShowAll(PaintDesk.Width, PaintDesk.Height);
+    ViewPort.ShowAll();
     Invalidate;
 end;
 
@@ -145,7 +145,7 @@ var
     i: integer;
 begin
     IndexTool:= 0;
-    ViewPort := TViewPort.Create(PaintDesk.Width / 2, PaintDesk.Height / 2);
+    ViewPort := TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
     DrawContinue:= false;
     ViewPort.AddDisplacement(PaintDesk.Width / 2, PaintDesk.Height / 2);
     ToolsBar.Images := ToolsImages;
@@ -206,15 +206,15 @@ procedure TDesk.PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
     Shift: TShiftState; X, Y: Integer);
 begin
     if (Button = mbLeft) then begin
-        Tools[IndexTool].MakeActive(Point(X,y));
+        Tools[IndexTool].Active(Point(X,y));
         DrawContinue:= true;
         IsMouseDown:= true;
     end
     else if (Button = mbRight) and (DrawContinue) then
-        Tools[IndexTool].AdditionalAction(Point(X,y));
+        Tools[IndexTool].RightClick(Point(X,y));
 
     if (Button = mbRight) and (Tools[IndexTool].FName = 'zoom') then
-        Tools[IndexTool].AdditionalAction(Point(X,y));
+        Tools[IndexTool].RightClick(Point(X,y));
     Invalidate;
 end;
 

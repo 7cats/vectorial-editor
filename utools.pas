@@ -13,11 +13,11 @@ type
     { TTool }
 
     TTool = class
-        procedure ToolMove(point : TPoint); virtual; abstract;
+        procedure MouseMove(point : TPoint); virtual; abstract;
         constructor Create(name : string);
-        procedure MakeActive(point : TPoint); virtual; abstract;
-        procedure AdditionalAction(point : TPoint); virtual;
-        procedure SpecificAction(point : TPoint; w, h: integer); virtual;
+        procedure Active(point : TPoint); virtual; abstract;
+        procedure RightClick(point : TPoint); virtual;
+        procedure Deactive(point : TPoint); virtual;
         public
             FName: string;
     end;
@@ -25,34 +25,34 @@ type
     { TPencilTool }
 
     TPencilTool = class(TTool)
-        procedure MakeActive(point : TPoint); override;
-        procedure ToolMove (point : TPoint); override;
+        procedure Active(point : TPoint); override;
+        procedure MouseMove (point : TPoint); override;
     end;
 
     { TPolylineTool }
 
     TPolylineTool = class(TTool)
-        procedure MakeActive(point : TPoint); override;
-        procedure ToolMove (point : TPoint); override;
-        procedure AdditionalAction (point : TPoint); override;
+        procedure Active(point : TPoint); override;
+        procedure MouseMove (point : TPoint); override;
+        procedure RightClick (point : TPoint); override;
     end;
 
     { TEllipseTool }
 
     TEllipseTool = class(TPolylineTool)
-        procedure MakeActive(point : TPoint); override;
+        procedure Active(point : TPoint); override;
     end;
 
     { TRecnungleTool }
 
     TRecnungleTool = class(TPolylineTool)
-        procedure MakeActive(point : TPoint); override;
+        procedure Active(point : TPoint); override;
     end;
 
     { TRoundRectangleTool }
 
     TRoundRectangleTool = class(TRecnungleTool)
-        procedure MakeActive(point : TPoint); override;
+        procedure Active(point : TPoint); override;
     end;
 
     {THandTool}
@@ -60,19 +60,19 @@ type
     THandTool = class(TTool)
         private
             FBeginCoordinate: TFloatPoint;
-            procedure MakeActive(point : TPoint); override;
-            procedure ToolMove(point : TPoint); override;
+            procedure Active(point : TPoint); override;
+            procedure MouseMove(point : TPoint); override;
     end;
 
     { TZoomTool }
 
     TZoomTool = class(TTool)
-        procedure MakeActive(point : TPoint); override;
-        procedure ToolMove(point : TPoint); override;
-        procedure AdditionalAction(point: TPoint); override;
-        procedure SpecificAction(point : TPoint; w, h: integer); override;
+        procedure Active(point : TPoint); override;
+        procedure MouseMove(point : TPoint); override;
+        procedure RightClick(point: TPoint); override;
+        procedure Deactive(point : TPoint); override;
         procedure ClickZoom ();
-        procedure RectClick (w, h: integer);
+        procedure RectClick ();
         private
             FBeginZoomRect, FEndZoomRect: TFloatPoint;
     end;
@@ -91,24 +91,24 @@ end;
 
 { TZoomTool }
 
-procedure TZoomTool.MakeActive(point: TPoint);
+procedure TZoomTool.Active(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TRectangle.Create(point);
     FBeginZoomRect := ViewPort.ScreenToWorld(point);
 end;
 
-procedure TZoomTool.ToolMove(point: TPoint);
+procedure TZoomTool.MouseMove(point: TPoint);
 begin
     Figures[High(Figures)].Stranch(point);
 end;
 
-procedure TZoomTool.AdditionalAction(point: TPoint);
+procedure TZoomTool.RightClick(point: TPoint);
 begin
     ViewPort.FZoom := max(0.01, ViewPort.FZoom - 0.09);
 end;
 
-procedure TZoomTool.SpecificAction(point: TPoint; w, h: integer);
+procedure TZoomTool.Deactive(point: TPoint);
 begin
     FEndZoomRect := ViewPort.ScreenToWorld(point);
     SetLength(Figures, Length(Figures) - 1);
@@ -116,7 +116,7 @@ begin
     if (sqrt(sqr(FEndZoomRect.X - FBeginZoomRect.X) + sqr(FEndZoomRect.Y - FBeginZoomRect.Y)) < 10) then
         ClickZoom()
     else
-        RectClick(w, h);
+        RectClick();
 end;
 
 procedure TZoomTool.ClickZoom;
@@ -124,24 +124,26 @@ begin
     ViewPort.AddDisplacement(ViewPort.FCenter.X - FBeginZoomRect.X,
                              ViewPort.FCenter.Y - FBeginZoomRect.Y);
     ViewPort.FZoom += 0.09;
+        ViewPort.FZoom := min(50, ViewPort.FZoom);
 end;
 
-procedure TZoomTool.RectClick(w, h: integer);
+procedure TZoomTool.RectClick();
 begin
     ViewPort.AddDisplacement(ViewPort.FCenter.X - (FBeginZoomRect.X + FEndZoomRect.X) / 2,
                              ViewPort.FCenter.Y - (FBeginZoomRect.Y + FEndZoomRect.Y) / 2);
-    ViewPort.FZoom *= min(h / abs(ViewPort.WorldToScreen(FEndZoomRect).Y  - ViewPort.WorldToScreen(FBeginZoomRect).Y),
-                          w / abs(ViewPort.WorldToScreen(FEndZoomRect).X  - ViewPort.WorldToScreen(FBeginZoomRect).X));
+    ViewPort.FZoom *= min(ViewPort.FPaintBoxCenter.Y * 2 / abs(ViewPort.WorldToScreen(FEndZoomRect).Y  - ViewPort.WorldToScreen(FBeginZoomRect).Y),
+                          ViewPort.FPaintBoxCenter.X * 2 / abs(ViewPort.WorldToScreen(FEndZoomRect).X - ViewPort.WorldToScreen(FBeginZoomRect).X));
+    ViewPort.FZoom := min(50, ViewPort.FZoom);
 end;
 
 { THandTool }
 
-procedure THandTool.MakeActive(point: TPoint);
+procedure THandTool.Active(point: TPoint);
 begin
     FBeginCoordinate:= ViewPort.ScreenToWorld(point);
 end;
 
-procedure THandTool.ToolMove(point: TPoint);
+procedure THandTool.MouseMove(point: TPoint);
 begin
     ViewPort.AddDisplacement(ViewPort.ScreenToWorld(point).x - FBeginCoordinate.x,
                              ViewPort.ScreenToWorld(point).y - FBeginCoordinate.y);
@@ -150,25 +152,25 @@ end;
 
 { TPolylineTool }
 
-procedure TPolylineTool.MakeActive(point: TPoint);
+procedure TPolylineTool.Active(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TPolyline.Create(point);
 end;
 
-procedure TPolylineTool.ToolMove(point: TPoint);
+procedure TPolylineTool.MouseMove(point: TPoint);
 begin
     Figures[High(Figures)].Stranch(point);
 end;
 
-procedure TPolylineTool.AdditionalAction(point: TPoint);
+procedure TPolylineTool.RightClick(point: TPoint);
 begin
     Figures[High(Figures)].AddPoint(point);
 end;
 
 { TRoundRectangleTool }
 
-procedure TRoundRectangleTool.MakeActive(point: TPoint);
+procedure TRoundRectangleTool.Active(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TRoundRectangle.Create(point);
@@ -176,7 +178,7 @@ end;
 
 { TRecnungleTool }
 
-procedure TRecnungleTool.MakeActive(point: TPoint);
+procedure TRecnungleTool.Active(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TRectangle.Create(point);
@@ -185,7 +187,7 @@ end;
 
 { TEllipseTool }
 
-procedure TEllipseTool.MakeActive(point: TPoint);
+procedure TEllipseTool.Active(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TEllipse.Create(point);
@@ -193,13 +195,13 @@ end;
 
 { TPencilTool }
 
-procedure TPencilTool.MakeActive(point: TPoint);
+procedure TPencilTool.Active(point: TPoint);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := TPencil.Create(point);
 end;
 
-procedure TPencilTool.ToolMove(point: TPoint);
+procedure TPencilTool.MouseMove(point: TPoint);
 begin
     Figures[High(Figures)].AddPoint(point);
 end;
@@ -216,11 +218,11 @@ begin
     ToolsImages.AddIcon(i);
 end;
 
-procedure TTool.AdditionalAction(point: TPoint);
+procedure TTool.RightClick(point: TPoint);
 begin
 end;
 
-procedure TTool.SpecificAction(point: TPoint; w, h: integer);
+procedure TTool.Deactive(point: TPoint);
 begin
 end;
 

@@ -16,16 +16,15 @@ type
     { TViewPort }
 
     TViewPort = class
-        FCenter: TFloatPoint;
+        FCenter, FPaintBoxCenter: TFloatPoint;
         FDisplacement, FZoom, FLeftBoarder, FRightBoarder, FBottomBoarder, FTopBoarder: extended;
-        FPaintBoxCenterX, FPaintBoxCenterY: double;
-        constructor Create(width, height: double);
+        constructor Create(width, height: integer);
         function WorldToScreen(fpoint: TFloatPoint): TPoint;
         function ScreenToWorld(point: TPoint): TFloatPoint;
         procedure AddDisplacement(dispacementX, dispacementY: extended);
         procedure CalcAndAddDisplacement(oldPoint, newPoint: TPoint);
-        procedure PaintBoxResize(BoxCentreX, BoxCentreY: double);
-        procedure ShowAll (w,h:integer);
+        procedure PaintBoxResize(PbWidth, PbHeight: integer);
+        procedure ShowAll ();
     end;
 
 var
@@ -38,23 +37,23 @@ implementation
 
 function TViewPort.WorldToScreen(fpoint: TFloatPoint): TPoint;
 begin
-    WorldToScreen.X := round(FPaintBoxCenterX + (fpoint.X - FCenter.X) * FZoom);
-    WorldToScreen.Y := round(FPaintBoxCenterY + (fpoint.Y - FCenter.Y) * FZoom);
+    WorldToScreen.X := round(FPaintBoxCenter.X + (fpoint.X - FCenter.X) * FZoom);
+    WorldToScreen.Y := round(FPaintBoxCenter.Y + (fpoint.Y - FCenter.Y) * FZoom);
 end;
 
 function TViewPort.ScreenToWorld(point: TPoint): TFloatPoint;
 begin
-    ScreenToWorld.X := FCenter.X + (point.X - FPaintBoxCenterX) / FZoom;
-    ScreenToWorld.Y := FCenter.Y + (point.Y - FPaintBoxCenterY) / FZoom;
+    ScreenToWorld.X := FCenter.X + (point.X - FPaintBoxCenter.X) / FZoom;
+    ScreenToWorld.Y := FCenter.Y + (point.Y - FPaintBoxCenter.Y) / FZoom;
 end;
 
-constructor TViewPort.Create(width, height: double);
+constructor TViewPort.Create(width, height: integer);
 begin
     FCenter.x:= 0;
     FCenter.y := 0;
     FZoom := 1;
-    FPaintBoxCenterY:= height;
-    FPaintBoxCenterX:= width;
+    FPaintBoxCenter.Y:= height / 2;
+    FPaintBoxCenter.X:= width / 2;
     FDisplacement:= 0;
 end;
 
@@ -69,20 +68,20 @@ begin
     AddDisplacement(newPoint.x - oldPoint.x, newPoint.y - oldPoint.y);
 end;
 
-procedure TViewPort.PaintBoxResize(boxCentreX, boxCentreY: double);
+procedure TViewPort.PaintBoxResize(PbWidth, PbHeight: integer);
 begin
-    FCenter.x += boxCentreX - FPaintBoxCenterX;
-    FCenter.y += boxCentreY - FPaintBoxCenterY;
-    FPaintBoxCenterX := boxCentreX;
-    FPaintBoxCenterY := boxCentreY;
+    FCenter.x += PbWidth / 2  - FPaintBoxCenter.X;
+    FCenter.y += PbHeight / 2 - FPaintBoxCenter.Y;
+    FPaintBoxCenter.X := PbWidth / 2;
+    FPaintBoxCenter.Y := PbHeight / 2;
 end;
 
-procedure TViewPort.ShowAll(w, h: integer);
+procedure TViewPort.ShowAll();
 begin
     ViewPort.FCenter.x := (FRightBoarder + FLeftBoarder) / 2;
     ViewPort.FCenter.y := (FTopBoarder + FBottomBoarder) / 2;
-    ViewPort.FZoom := min(h / (FBottomBoarder  - FTopBoarder + 1),
-                          w / (FRightBoarder - FLeftBoarder + 1))
+    ViewPort.FZoom *= min(FPaintBoxCenter.X / (FBottomBoarder  - FTopBoarder),
+                          FPaintBoxCenter.Y / (FRightBoarder - FLeftBoarder))
 end;
 
 end.

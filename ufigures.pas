@@ -5,7 +5,7 @@ unit UFigures;
 interface
 
 uses
-    Classes, SysUtils, Forms, Controls, Graphics, Dialogs, UField;
+    Classes, SysUtils, Forms, Controls, Graphics, Dialogs, UField, Math;
 type
     { TFigures }
 
@@ -108,50 +108,38 @@ end;
 
 function TFigure.MaxX: extended;
 var
-    tmp: extended;
     i: integer;
 begin
-    tmp := FPoints[0].x;
+    result := FPoints[0].x;
     for i := 1 to High(FPoints) do
-        if (tmp < FPoints[i].x) then
-           tmp := FPoints[i].x;
-    result := tmp;
+        result := max(result,  FPoints[i].x);
 end;
 
 function TFigure.MinX: extended;
 var
-    tmp: extended;
     i: integer;
 begin
-    tmp := FPoints[0].x;
+    result := FPoints[0].x;
     for i := 1 to High(FPoints) do
-        if (tmp > FPoints[i].x) then
-           tmp := FPoints[i].x;
-    result := tmp;
+        result := min(result, FPoints[i].x);
 end;
 
 function TFigure.MaxY: extended;
 var
-    tmp: extended;
     i: integer;
 begin
-    tmp := FPoints[0].y;
+    result := FPoints[0].y;
     for i := 1 to High(FPoints) do
-        if (tmp < FPoints[i].y) then
-           tmp := FPoints[i].y;
-    result := tmp;
+        result := max(result, FPoints[i].y);
 end;
 
 function TFigure.MinY: extended;
 var
-    tmp: extended;
     i: integer;
 begin
-    tmp := FPoints[0].y;
+    result := FPoints[0].y;
     for i := 1 to High(FPoints) do
-        if (tmp > FPoints[i].y) then
-           tmp := FPoints[i].y;
-    result := tmp;
+        result := min(result, FPoints[i].y);
 end;
 
 

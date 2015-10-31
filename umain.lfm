@@ -1,0 +1,103 @@
+object Desk: TDesk
+  Left = 454
+  Height = 647
+  Top = 93
+  Width = 883
+  Caption = 'Desk'
+  ClientHeight = 647
+  ClientWidth = 883
+  Menu = MainMenu
+  OnCreate = FormCreate
+  OnMouseUp = PaintDeskMouseUp
+  ShowHint = True
+  LCLVersion = '1.0.10.0'
+  object PaintDesk: TPaintBox
+    Left = 0
+    Height = 584
+    Top = 50
+    Width = 870
+    Align = alClient
+    OnMouseDown = PaintDeskMouseDown
+    OnMouseMove = PaintDeskMouseMove
+    OnMouseUp = PaintDeskMouseUp
+    OnPaint = FormPaint
+    OnResize = PaintDeskResize
+  end
+  object ToolsBar: TToolBar
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 883
+    ButtonHeight = 48
+    ButtonWidth = 48
+    Color = clWindow
+    ParentColor = False
+    TabOrder = 0
+  end
+  object XcoordinateText: TStaticText
+    Left = 10
+    Height = 25
+    Top = 560
+    Width = 65
+    Caption = 'XcoordinateText'
+    TabOrder = 1
+  end
+  object YcoordinateText: TStaticText
+    Left = 10
+    Height = 24
+    Top = 586
+    Width = 65
+    Caption = 'YcoordinateText'
+    TabOrder = 2
+  end
+  object ScrollBar1: TScrollBar
+    Left = 0
+    Height = 13
+    Top = 634
+    Width = 883
+    Align = alBottom
+    Max = 10
+    Min = -10
+    PageSize = 0
+    ParentShowHint = False
+    TabOrder = 4
+  end
+  object ScrollBar2: TScrollBar
+    Left = 870
+    Height = 584
+    Top = 50
+    Width = 13
+    Align = alRight
+    Kind = sbVertical
+    PageSize = 0
+    TabOrder = 3
+  end
+  object MainMenu: TMainMenu
+    object FileMenu: TMenuItem
+      Caption = 'Файл'
+      object ExitMItem: TMenuItem
+        Caption = 'Выход'
+        OnClick = ExitItemClick
+      end
+    end
+    object ToolMenu: TMenuItem
+      Caption = 'Инструменты'
+      object ShowAllItem: TMenuItem
+        Caption = 'Показать все изображение'
+        Enabled = False
+        OnClick = ShowAllItemClick
+      end
+      object ClearCanvasItem: TMenuItem
+        Caption = 'Очистить лист'
+        OnClick = ClearCanvasItemClick
+      end
+    end
+    object HelpMenu: TMenuItem
+      Caption = 'Помощь'
+      object AboutMItem: TMenuItem
+        Caption = 'О программе'
+        OnClick = AboutMItemClick
+      end
+    end
+  end
+end

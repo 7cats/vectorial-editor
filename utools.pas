@@ -72,7 +72,7 @@ type
         procedure RightClick(point: TPoint); override;
         procedure Deactive(point : TPoint); override;
         procedure ClickZoom ();
-        procedure RectClick ();
+        procedure RectZoom ();
         private
             FBeginZoomRect, FEndZoomRect: TFloatPoint;
     end;
@@ -82,6 +82,12 @@ var
     ToolsImages: TImageList;
 
 implementation
+
+procedure AddFigure(figure: TFigure);
+begin
+    SetLength(Figures, Length(Figures) + 1);
+    Figures[High(Figures)] := figure;
+end;
 
 procedure AddTool(tool : TTool);
 begin
@@ -93,8 +99,7 @@ end;
 
 procedure TZoomTool.Active(point: TPoint);
 begin
-    SetLength(Figures, Length(Figures) + 1);
-    Figures[High(Figures)] := TRectangle.Create(point);
+    AddFigure(TRectangle.Create(point));
     FBeginZoomRect := ViewPort.ScreenToWorld(point);
 end;
 
@@ -116,7 +121,7 @@ begin
     if (sqrt(sqr(FEndZoomRect.X - FBeginZoomRect.X) + sqr(FEndZoomRect.Y - FBeginZoomRect.Y)) < 10) then
         ClickZoom()
     else
-        RectClick();
+        RectZoom();
 end;
 
 procedure TZoomTool.ClickZoom;
@@ -127,12 +132,12 @@ begin
         ViewPort.FZoom := min(50, ViewPort.FZoom);
 end;
 
-procedure TZoomTool.RectClick();
+procedure TZoomTool.RectZoom();
 begin
     ViewPort.AddDisplacement(ViewPort.FCenter.X - (FBeginZoomRect.X + FEndZoomRect.X) / 2,
                              ViewPort.FCenter.Y - (FBeginZoomRect.Y + FEndZoomRect.Y) / 2);
-    ViewPort.FZoom *= min(ViewPort.FPaintBoxCenter.Y * 2 / abs(ViewPort.WorldToScreen(FEndZoomRect).Y  - ViewPort.WorldToScreen(FBeginZoomRect).Y),
-                          ViewPort.FPaintBoxCenter.X * 2 / abs(ViewPort.WorldToScreen(FEndZoomRect).X - ViewPort.WorldToScreen(FBeginZoomRect).X));
+    ViewPort.FZoom *= min((ViewPort.FPaintBoxSize.Y) / abs(ViewPort.WorldToScreen(FEndZoomRect).Y  - ViewPort.WorldToScreen(FBeginZoomRect).Y),
+                          (ViewPort.FPaintBoxSize.X) / abs(ViewPort.WorldToScreen(FEndZoomRect).X - ViewPort.WorldToScreen(FBeginZoomRect).X));
     ViewPort.FZoom := min(50, ViewPort.FZoom);
 end;
 
@@ -154,8 +159,7 @@ end;
 
 procedure TPolylineTool.Active(point: TPoint);
 begin
-    SetLength(Figures, Length(Figures) + 1);
-    Figures[High(Figures)] := TPolyline.Create(point);
+    AddFigure(TPolyline.Create(point));
 end;
 
 procedure TPolylineTool.MouseMove(point: TPoint);
@@ -172,16 +176,14 @@ end;
 
 procedure TRoundRectangleTool.Active(point: TPoint);
 begin
-    SetLength(Figures, Length(Figures) + 1);
-    Figures[High(Figures)] := TRoundRectangle.Create(point);
+    AddFigure(TRoundRectangle.Create(point));
 end;
 
 { TRecnungleTool }
 
 procedure TRecnungleTool.Active(point: TPoint);
 begin
-    SetLength(Figures, Length(Figures) + 1);
-    Figures[High(Figures)] := TRectangle.Create(point);
+    AddFigure(TRectangle.Create(point));
 end;
 
 
@@ -189,16 +191,14 @@ end;
 
 procedure TEllipseTool.Active(point: TPoint);
 begin
-    SetLength(Figures, Length(Figures) + 1);
-    Figures[High(Figures)] := TEllipse.Create(point);
+    AddFigure(TEllipse.Create(point));
 end;
 
 { TPencilTool }
 
 procedure TPencilTool.Active(point: TPoint);
 begin
-    SetLength(Figures, Length(Figures) + 1);
-    Figures[High(Figures)] := TPencil.Create(point);
+    AddFigure(TPencil.Create(point));
 end;
 
 procedure TPencilTool.MouseMove(point: TPoint);

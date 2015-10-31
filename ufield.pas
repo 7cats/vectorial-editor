@@ -16,7 +16,8 @@ type
     { TViewPort }
 
     TViewPort = class
-        FCenter, FPaintBoxCenter: TFloatPoint;
+        FCenter: TFloatPoint;
+        FPaintBoxSize: TPoint;
         FDisplacement, FZoom, FLeftBoarder, FRightBoarder, FBottomBoarder, FTopBoarder: extended;
         constructor Create(width, height: integer);
         function WorldToScreen(fpoint: TFloatPoint): TPoint;
@@ -37,14 +38,14 @@ implementation
 
 function TViewPort.WorldToScreen(fpoint: TFloatPoint): TPoint;
 begin
-    WorldToScreen.X := round(FPaintBoxCenter.X + (fpoint.X - FCenter.X) * FZoom);
-    WorldToScreen.Y := round(FPaintBoxCenter.Y + (fpoint.Y - FCenter.Y) * FZoom);
+    WorldToScreen.X := round(FPaintBoxSize.X / 2 + (fpoint.X - FCenter.X) * FZoom);
+    WorldToScreen.Y := round(FPaintBoxSize.Y / 2 + (fpoint.Y - FCenter.Y) * FZoom);
 end;
 
 function TViewPort.ScreenToWorld(point: TPoint): TFloatPoint;
 begin
-    ScreenToWorld.X := FCenter.X + (point.X - FPaintBoxCenter.X) / FZoom;
-    ScreenToWorld.Y := FCenter.Y + (point.Y - FPaintBoxCenter.Y) / FZoom;
+    ScreenToWorld.X := FCenter.X + (point.X - FPaintBoxSize.X / 2) / FZoom;
+    ScreenToWorld.Y := FCenter.Y + (point.Y - FPaintBoxSize.Y / 2) / FZoom;
 end;
 
 constructor TViewPort.Create(width, height: integer);
@@ -52,8 +53,8 @@ begin
     FCenter.x:= 0;
     FCenter.y := 0;
     FZoom := 1;
-    FPaintBoxCenter.Y:= height / 2;
-    FPaintBoxCenter.X:= width / 2;
+    FPaintBoxSize.Y:= height;
+    FPaintBoxSize.X:= width;
     FDisplacement:= 0;
 end;
 
@@ -70,18 +71,18 @@ end;
 
 procedure TViewPort.PaintBoxResize(PbWidth, PbHeight: integer);
 begin
-    FCenter.x += PbWidth / 2  - FPaintBoxCenter.X;
-    FCenter.y += PbHeight / 2 - FPaintBoxCenter.Y;
-    FPaintBoxCenter.X := PbWidth / 2;
-    FPaintBoxCenter.Y := PbHeight / 2;
+    FCenter.x += PbWidth / 2  - FPaintBoxSize.X / 2;
+    FCenter.y += PbHeight / 2 - FPaintBoxSize.Y / 2;
+    FPaintBoxSize.X := PbWidth;
+    FPaintBoxSize.Y := PbHeight;
 end;
 
 procedure TViewPort.ShowAll();
 begin
     ViewPort.FCenter.x := (FRightBoarder + FLeftBoarder) / 2;
-    ViewPort.FCenter.y := (FTopBoarder + FBottomBoarder) / 2;
-    ViewPort.FZoom *= min(FPaintBoxCenter.X / (FBottomBoarder  - FTopBoarder),
-                          FPaintBoxCenter.Y / (FRightBoarder - FLeftBoarder))
+    ViewPort.FCenter.y := (FTopBoarder + FBottomBoarder) / 2 ;
+    ViewPort.FZoom := min(FPaintBoxSize.Y / abs(FBottomBoarder  - FTopBoarder + 50), //
+                          FPaintBoxSize.X / abs(FRightBoarder - FLeftBoarder + 50));
 end;
 
 end.

@@ -1,4 +1,4 @@
-unit main_unit;
+unit UMain;
 
 {$mode objfpc}{$H+}
 
@@ -221,4 +221,3 @@ begin
 end;
 
 end.
-

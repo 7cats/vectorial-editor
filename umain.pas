@@ -19,8 +19,8 @@ type
         HelpMenu: TMenuItem;
         AboutMItem: TMenuItem;
         ClearCanvasItem: TMenuItem;
-        ScrollBar1: TScrollBar;
-        ScrollBar2: TScrollBar;
+        HorizontalScrollBar: TScrollBar;
+        VecticalScrollBar: TScrollBar;
         ToolMenu: TMenuItem;
         ShowAllItem: TMenuItem;
         PaintDesk: TPaintBox;
@@ -32,7 +32,9 @@ type
         procedure ClearCanvasItemClick(Sender: TObject);
         procedure ExitItemClick(Sender: TObject);
         procedure FormCreate(Sender: TObject);
-        procedure FormPaint(Sender: TObject);
+        procedure ScrollBarsOnScroll(Sender: TObject;
+            ScrollCode: TScrollCode; var ScrollPos: Integer);
+        procedure OnPaint(Sender: TObject);
         procedure PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
             Shift: TShiftState; X, Y: Integer);
         procedure PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -47,6 +49,8 @@ type
         private
             IndexTool: integer;
             DrawContinue, IsMouseDown : boolean;
+            PosCenter: TFloatPoint;
+            ScrollCount: TPoint;
         public
             { public declarations }
     end;
@@ -63,9 +67,27 @@ implementation
 
 procedure TDesk.PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
     Y: Integer);
+var
+    tmp: integer;
 begin
-    if (ssLeft in Shift) and (IsMouseDown) then begin
+    if (ssLeft in Shift) and (IsMouseDown) and not (Sender is TScrollBar) then begin
+        //ShowMessage(intToStr(ScrollCount.X));
         Tools[IndexTool].MouseMove(point(X,y));
+
+        if (X + HorizontalScrollBar.Position < HorizontalScrollBar.Min) then
+            HorizontalScrollBar.Min := min(HorizontalScrollBar.Min, X - ScrollCount.X + HorizontalScrollBar.Min);
+
+        //HorizontalScrollBar.Max := max(HorizontalScrollBar.Max, X + HorizontalScrollBar.Max - PaintDesk.Width - 30);
+
+        if (Y + VecticalScrollBar.Position < VecticalScrollBar.Min) then
+            VecticalScrollBar.Min := min(VecticalScrollBar.Min, Y  - ScrollCount.Y + VecticalScrollBar.Min);
+        //VecticalScrollBar.Max := max(VecticalScrollBar.Max, Y + VecticalScrollBar.Max - PaintDesk.Height - 30);
+
+        ScrollCount.X := X;
+        ScrollCount.Y := Y;
+
+        //ShowMessage(intToStr(X));
+        //ShowMessage(inttostr(x - PaintDesk.Left));
         Invalidate;
     end;
 end;
@@ -73,11 +95,13 @@ end;
 procedure TDesk.PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if (Button = mbLeft) then begin
-      IsMouseDown := False;
-      Tools[IndexTool].Deactive(point(X,Y));
-  end;
-  Invalidate;
+    if (Button = mbLeft) then begin
+        IsMouseDown := False;
+        Tools[IndexTool].Deactive(point(X,Y));
+        ScrollCount.X:= 0;
+        ScrollCount.Y:= 0;
+    end;
+    Invalidate;
 end;
 
 procedure TDesk.PaintDeskResize(Sender: TObject);
@@ -149,10 +173,26 @@ begin
     IndexTool:= 0;
     ViewPort := TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
     DrawContinue:= false;
+    VecticalScrollBar.Min:= 0;
+    VecticalScrollBar.Max:= PaintDesk.Height ;
+    VecticalScrollBar.Position:= PaintDesk.Height div 2;
+    VecticalScrollBar.PageSize:= PaintDesk.Height;
+    ScrollCount.X:= 0;
+    ScrollCount.Y:= 0;
+
+
+    HorizontalScrollBar.Min:= 0;
+    HorizontalScrollBar.Max:= PaintDesk.Width ;
+    HorizontalScrollBar.Position:= PaintDesk.Width div 2;
+    HorizontalScrollBar.PageSize:= PaintDesk.Width;
+
     ViewPort.AddDisplacement(PaintDesk.Width / 2, PaintDesk.Height / 2);
+    PosCenter.X := ViewPort.FCenter.X;
+    PosCenter.Y := ViewPort.FCenter.Y;
     ToolsBar.Images := ToolsImages;
     IsMouseDown:= false;
     ShowAllItem.Enabled:= false;
+
     for i := 0 to High(Tools) do begin
         button := TToolButton.Create(self);
         button.Parent := ToolsBar;
@@ -160,6 +200,7 @@ begin
         button.ImageIndex:= i;
         button.OnClick := @PanelBarButtonClick;
     end;
+
     ZoomBox := TComboBox.Create(self);
     ZoomBox.Name:= 'ZoomBox';
     ZoomBox.Parent := ToolsBar;
@@ -175,8 +216,23 @@ begin
     ZoomBox.OnEditingDone:= @ChangeComboBox;
 end;
 
+procedure TDesk.ScrollBarsOnScroll(Sender: TObject;
+    ScrollCode: TScrollCode; var ScrollPos: Integer);
+begin
+    if (Sender as TScrollBar).Name = 'VecticalScrollBar' then begin
+         //showMessage(inttostr(VecticalScrollBar.Position) + '  ' + inttostr(ScrollPos));
+         ViewPort.AddDisplacement(0, VecticalScrollBar.Position - ScrollPos);
+         //ShowMessage(IntToStr(VecticalScrollBar.Min) + ' ' + IntToStr(VecticalScrollBar.Max) + ' ' + IntToStr(ScrollPos));
+    end
+    else begin
+        ViewPort.AddDisplacement(HorizontalScrollBar.Position - ScrollPos, 0);
+        //ShowMessage(IntToStr(HorizontalScrollBar.Min) + ' ' + IntToStr(HorizontalScrollBar.Max) + ' ' + IntToStr(ScrollPos));
+    end;
+    Invalidate;
+end;
 
-procedure TDesk.FormPaint(Sender: TObject);
+
+procedure TDesk.OnPaint(Sender: TObject);
 var
     figure: TFigure;
 begin
@@ -186,21 +242,35 @@ begin
     XcoordinateText.Caption:= FloatToStr(ViewPort.FCenter.x);
     if (Length(Figures) > 0) then begin
        ShowAllItem.Enabled := true;
-       ViewPort.FTopBoarder := Figures[0].FPoints[0].y;
-       ViewPort.FBottomBoarder := Figures[0].FPoints[0].y;
-       ViewPort.FLeftBoarder := Figures[0].FPoints[0].x;
-       ViewPort.FRightBoarder := Figures[0].FPoints[0].x;
+       ViewPort.FLeftTop.Y := Figures[0].FPoints[0].y;
+       ViewPort.FRightBottom.Y := Figures[0].FPoints[0].y;
+       ViewPort.FLeftTop.X := Figures[0].FPoints[0].x;
+       ViewPort.FRightBottom.X := Figures[0].FPoints[0].x;
     end
     else
        ShowAllItem.Enabled := false;
     ZoomBox.Caption := FloatToStr(round(ViewPort.FZoom * 10000) / 100);
     for figure in Figures do begin
         figure.Draw(PaintDesk.Canvas);
-        ViewPort.FRightBoarder := max(ViewPort.FRightBoarder, figure.MaxX);
-        ViewPort.FLeftBoarder := min(ViewPort.FLeftBoarder, figure.MinX);
-        ViewPort.FTopBoarder := min(ViewPort.FTopBoarder, figure.MinY);
-        ViewPort.FBottomBoarder := max(ViewPort.FBottomBoarder, figure.MaxY);
+        ViewPort.FRightBottom.x := max(ViewPort.FRightBottom.x, figure.MaxX);
+        ViewPort.FLeftTop.x := min(ViewPort.FLeftTop.x, figure.MinX);
+        ViewPort.FLeftTop.Y := min(ViewPort.FLeftTop.Y, figure.MinY);
+        ViewPort.FRightBottom.Y := max(ViewPort.FRightBottom.Y, figure.MaxY);
     end;
+
+{    VecticalScrollBar.Min := min(VecticalScrollBar.Min, VecticalScrollBar.Position + round(ViewPort.FCenter.Y - PosCenter.Y));
+    VecticalScrollBar.Max := max(VecticalScrollBar.Max, VecticalScrollBar.Position + round(ViewPort.FCenter.Y - PosCenter.Y));
+
+    HorizontalScrollBar.Min := min(HorizontalScrollBar.Min, HorizontalScrollBar.Position + round(ViewPort.FCenter.X - PosCenter.X));
+    HorizontalScrollBar.Max := max(HorizontalScrollBar.Max, HorizontalScrollBar.Position + round(ViewPort.FCenter.X - PosCenter.X)); }
+
+
+
+{    VecticalScrollBar.Position := VecticalScrollBar.Position + round(ViewPort.FCenter.Y - PosCenter.Y);
+    HorizontalScrollBar.Position := HorizontalScrollBar.Position + round(ViewPort.FCenter.X - PosCenter.X);
+
+    PosCenter.X := ViewPort.FCenter.X;
+    PosCenter.Y := ViewPort.FCenter.Y;}
 end;
 
 

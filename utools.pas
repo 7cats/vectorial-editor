@@ -153,6 +153,7 @@ begin
     ViewPort.AddDisplacement(ViewPort.ScreenToWorld(point).x - FBeginCoordinate.x,
                              ViewPort.ScreenToWorld(point).y - FBeginCoordinate.y);
     FBeginCoordinate:= ViewPort.ScreenToWorld(point);
+
 end;
 
 { TPolylineTool }

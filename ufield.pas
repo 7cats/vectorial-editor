@@ -16,9 +16,9 @@ type
     { TViewPort }
 
     TViewPort = class
-        FCenter: TFloatPoint;
+        FCenter, FLeftTop, FRightBottom: TFloatPoint;
         FPaintBoxSize: TPoint;
-        FDisplacement, FZoom, FLeftBoarder, FRightBoarder, FBottomBoarder, FTopBoarder: extended;
+        FDisplacement, FZoom: extended;
         constructor Create(width, height: integer);
         function WorldToScreen(fpoint: TFloatPoint): TPoint;
         function ScreenToWorld(point: TPoint): TFloatPoint;
@@ -79,10 +79,10 @@ end;
 
 procedure TViewPort.ShowAll();
 begin
-    ViewPort.FCenter.x := (FRightBoarder + FLeftBoarder) / 2;
-    ViewPort.FCenter.y := (FTopBoarder + FBottomBoarder) / 2 ;
-    ViewPort.FZoom := min(FPaintBoxSize.Y / abs(FBottomBoarder  - FTopBoarder + 50), //
-                          FPaintBoxSize.X / abs(FRightBoarder - FLeftBoarder + 50));
+    ViewPort.FCenter.x := (FLeftTop.X - FRightBottom.X) / 2;
+    ViewPort.FCenter.y := (FLeftTop.Y - FRightBottom.Y) / 2 ;
+    ViewPort.FZoom := min(FPaintBoxSize.Y / abs(WorldToScreen(FLeftTop).Y - WorldToScreen(FRightBottom).Y),
+                          FPaintBoxSize.X / abs(WorldToScreen(FLeftTop).X - WorldToScreen(FRightBottom).X));
 end;
 
 end.

@@ -8,6 +8,7 @@ object Desk: TDesk
   ClientWidth = 883
   Menu = MainMenu
   OnCreate = FormCreate
+  OnMouseMove = PaintDeskMouseMove
   OnMouseUp = PaintDeskMouseUp
   ShowHint = True
   LCLVersion = '1.0.10.0'
@@ -20,7 +21,7 @@ object Desk: TDesk
     OnMouseDown = PaintDeskMouseDown
     OnMouseMove = PaintDeskMouseMove
     OnMouseUp = PaintDeskMouseUp
-    OnPaint = FormPaint
+    OnPaint = OnPaint
     OnResize = PaintDeskResize
   end
   object ToolsBar: TToolBar
@@ -50,27 +51,35 @@ object Desk: TDesk
     Caption = 'YcoordinateText'
     TabOrder = 2
   end
-  object ScrollBar1: TScrollBar
+  object HorizontalScrollBar: TScrollBar
     Left = 0
     Height = 13
     Top = 634
     Width = 883
     Align = alBottom
-    Max = 10
-    Min = -10
+    LargeChange = 5000
+    Max = 1
+    Min = -100
     PageSize = 0
     ParentShowHint = False
+    Position = -90
+    SmallChange = 10
     TabOrder = 4
+    OnScroll = ScrollBarsOnScroll
   end
-  object ScrollBar2: TScrollBar
+  object VecticalScrollBar: TScrollBar
     Left = 870
     Height = 584
     Top = 50
     Width = 13
     Align = alRight
     Kind = sbVertical
-    PageSize = 0
+    LargeChange = 5000
+    Min = -10
+    PageSize = 100
+    ParentBidiMode = False
     TabOrder = 3
+    OnScroll = ScrollBarsOnScroll
   end
   object MainMenu: TMainMenu
     object FileMenu: TMenuItem

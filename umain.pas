@@ -59,6 +59,7 @@ type
         procedure ShowAllItemClick(Sender: TObject);
         procedure ChangeComboBox(Sender: TObject);
         function IsFloat(str :string): boolean;
+        procedure ScrollBarsChange();
         private
             IndexTool: integer;
             DrawContinue, IsMouseDown : boolean;
@@ -95,8 +96,6 @@ begin
     if (Button = mbLeft) then begin
         IsMouseDown := False;
         Tools[IndexTool].MouseUp(point(X,Y));
-        ScrollCount.X:= 0;
-        ScrollCount.Y:= 0;
     end;
     Invalidate;
 end;
@@ -180,6 +179,14 @@ begin
         exit(true);
 end;
 
+procedure TDesk.ScrollBarsChange;
+begin
+    HorizontalScrollBar.Min:=  min(HorizontalScrollBar.min, round(ViewPort.WorldToScreen(ViewPort.FLeftTop).x));
+    HorizontalScrollBar.Max:= max(HorizontalScrollBar.Max,round(ViewPort.WorldToScreen(ViewPort.FRightBottom).x));
+    VecticalScrollBar.Min:=  min(VecticalScrollBar.Min, round(ViewPort.WorldToScreen(ViewPort.FLeftTop).y));
+    VecticalScrollBar.Max:= max(VecticalScrollBar.Max, round(ViewPort.WorldToScreen(ViewPort.FRightBottom).y));
+end;
+
 procedure TDesk.ExitItemClick(Sender: TObject);
 begin
     Close;
@@ -197,16 +204,15 @@ begin
     ViewPort := TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
     DrawContinue:= false;
     VecticalScrollBar.Min:= 0;
-    VecticalScrollBar.Max:= PaintDesk.Height ;
+    VecticalScrollBar.Max:= PaintDesk.Height;
     VecticalScrollBar.Position:= PaintDesk.Height div 2;
-    VecticalScrollBar.PageSize:= PaintDesk.Height;
-    ScrollCount.X:= 0;
-    ScrollCount.Y:= 0;
+    //VecticalScrollBar.PageSize:= PaintDesk.Height;
+
 
     HorizontalScrollBar.Min:= 0;
-    HorizontalScrollBar.Max:= PaintDesk.Width ;
+    HorizontalScrollBar.Max:= PaintDesk.Width;
     HorizontalScrollBar.Position:= PaintDesk.Width div 2;
-    HorizontalScrollBar.PageSize:= PaintDesk.Width;
+    //HorizontalScrollBar.PageSize:= PaintDesk.Width;
 
     ViewPort.AddDisplacement(PaintDesk.Width / 2, PaintDesk.Height / 2);
     PosCenter.X := ViewPort.FCenter.X;
@@ -239,7 +245,6 @@ begin
 
     assignFile (input, 'primary_colors.txt');
     reset(input);
-
     i := 0;
     SetLength(PaletteColors, PaletteGrid.RowCount * PaletteGrid.ColCount);
     while not EOF do begin
@@ -303,6 +308,7 @@ begin
     YcoordinateText.Caption:= FloatToStr(ViewPort.FCenter.y);
     XcoordinateText.Caption:= FloatToStr(ViewPort.FCenter.x);
     if (Length(Figures) > 0) then begin
+       ScrollBarsChange();
        ShowAllItem.Enabled := true;
        ViewPort.FLeftTop.Y := Figures[0].FPoints[0].y;
        ViewPort.FRightBottom.Y := Figures[0].FPoints[0].y;
@@ -320,6 +326,7 @@ begin
         ViewPort.FLeftTop.Y := min(ViewPort.FLeftTop.Y, figure.MinY);
         ViewPort.FRightBottom.Y := max(ViewPort.FRightBottom.Y, figure.MaxY);
     end;
+
 end;
 
 

@@ -5,14 +5,16 @@ unit UMain;
 interface
 
 uses
-    Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
-    ExtCtrls, Menus, ComCtrls, StdCtrls, DbCtrls, UTools, UFigures, UField, Math;
+    Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
+    Menus, ComCtrls, StdCtrls, DbCtrls, Grids, UTools, UFigures, UField, Math;
 
 type
 
     { TDesk }
 
     TDesk = class(TForm)
+            ColorDialog: TColorDialog;
+        PaletteGrid: TDrawGrid;
         MainMenu: TMainMenu;
         FileMenu: TMenuItem;
         ExitMItem: TMenuItem;
@@ -20,6 +22,10 @@ type
         AboutMItem: TMenuItem;
         ClearCanvasItem: TMenuItem;
         HorizontalScrollBar: TScrollBar;
+        Panel1: TPanel;
+        Panel3: TPanel;
+        MainColorShape: TShape;
+        AdditionalColorShape: TShape;
         VecticalScrollBar: TScrollBar;
         ToolMenu: TMenuItem;
         ShowAllItem: TMenuItem;
@@ -30,8 +36,13 @@ type
         ZoomBox: TComboBox;
         procedure AboutMItemClick(Sender: TObject);
         procedure ClearCanvasItemClick(Sender: TObject);
+        procedure PaletteGridDrawCell(Sender: TObject; aCol, aRow: Integer;
+            aRect: TRect; aState: TGridDrawState);
         procedure ExitItemClick(Sender: TObject);
         procedure FormCreate(Sender: TObject);
+        procedure PaletteGridMouseDown(Sender: TObject; Button: TMouseButton;
+            Shift: TShiftState; X, Y: Integer);
+        procedure PalleteGridOnDblClick(Sender: TObject);
         procedure ScrollBarsOnScroll(Sender: TObject;
             ScrollCode: TScrollCode; var ScrollPos: Integer);
         procedure OnPaint(Sender: TObject);
@@ -40,9 +51,11 @@ type
         procedure PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
             Y: Integer);
         procedure PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
-          Shift: TShiftState; X, Y: Integer);
+            Shift: TShiftState; X, Y: Integer);
         procedure PaintDeskResize(Sender: TObject);
         procedure PanelBarButtonClick (Sender: TObject);
+        procedure ShapeMouseDown(Sender: TObject; Button: TMouseButton;
+            Shift: TShiftState; X, Y: Integer);
         procedure ShowAllItemClick(Sender: TObject);
         procedure ChangeComboBox(Sender: TObject);
         function IsFloat(str :string): boolean;
@@ -51,6 +64,8 @@ type
             DrawContinue, IsMouseDown : boolean;
             PosCenter: TFloatPoint;
             ScrollCount: TPoint;
+            PaletteColors : array of TColor;
+            MCol, Mrow: integer;
         public
             { public declarations }
     end;
@@ -67,27 +82,9 @@ implementation
 
 procedure TDesk.PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
     Y: Integer);
-var
-    tmp: integer;
 begin
     if (ssLeft in Shift) and (IsMouseDown) and not (Sender is TScrollBar) then begin
-        //ShowMessage(intToStr(ScrollCount.X));
         Tools[IndexTool].MouseMove(point(X,y));
-
-        if (X + HorizontalScrollBar.Position < HorizontalScrollBar.Min) then
-            HorizontalScrollBar.Min := min(HorizontalScrollBar.Min, X - ScrollCount.X + HorizontalScrollBar.Min);
-
-        //HorizontalScrollBar.Max := max(HorizontalScrollBar.Max, X + HorizontalScrollBar.Max - PaintDesk.Width - 30);
-
-        if (Y + VecticalScrollBar.Position < VecticalScrollBar.Min) then
-            VecticalScrollBar.Min := min(VecticalScrollBar.Min, Y  - ScrollCount.Y + VecticalScrollBar.Min);
-        //VecticalScrollBar.Max := max(VecticalScrollBar.Max, Y + VecticalScrollBar.Max - PaintDesk.Height - 30);
-
-        ScrollCount.X := X;
-        ScrollCount.Y := Y;
-
-        //ShowMessage(intToStr(X));
-        //ShowMessage(inttostr(x - PaintDesk.Left));
         Invalidate;
     end;
 end;
@@ -97,7 +94,7 @@ procedure TDesk.PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
 begin
     if (Button = mbLeft) then begin
         IsMouseDown := False;
-        Tools[IndexTool].Deactive(point(X,Y));
+        Tools[IndexTool].MouseUp(point(X,Y));
         ScrollCount.X:= 0;
         ScrollCount.Y:= 0;
     end;
@@ -114,6 +111,13 @@ procedure TDesk.PanelBarButtonClick(Sender: TObject);
 begin
     IndexTool:= (Sender as TToolButton).Tag;
     DrawContinue:= false;
+end;
+
+procedure TDesk.ShapeMouseDown(Sender: TObject; Button: TMouseButton;
+    Shift: TShiftState; X, Y: Integer);
+begin
+    if (ColorDialog.Execute) then
+        (Sender as TShape).Brush.Color := ColorDialog.Color;
 end;
 
 procedure TDesk.ShowAllItemClick(Sender: TObject);
@@ -133,6 +137,22 @@ begin
     SetLength(Figures, 0);
     ViewPort:= TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
     Invalidate;
+end;
+
+procedure TDesk.PalleteGridOnDblClick(Sender: TObject);
+begin
+  if ColorDialog.Execute then begin
+      PaletteColors[PaletteGrid.ColCount * Mrow + Mcol] := ColorDialog.Color;
+      PaletteGrid.InvalidateCell(Mcol, Mrow);
+  end;
+end;
+
+
+procedure TDesk.PaletteGridDrawCell(Sender: TObject; aCol, aRow: Integer;
+    aRect: TRect; aState: TGridDrawState);
+begin
+    PaletteGrid.Canvas.Brush.Color := PaletteColors[aRow * PaletteGrid.ColCount + aCol];
+    PaletteGrid.Canvas.FillRect(aRect);
 end;
 
 procedure TDesk.ChangeComboBox(Sender: TObject);
@@ -166,9 +186,12 @@ begin
 end;
 
 procedure TDesk.FormCreate(Sender: TObject);
+const
+    tint = 25;
 var
     button: TToolButton;
-    i: integer;
+    i, j: integer;
+    r, g, b: integer;
 begin
     IndexTool:= 0;
     ViewPort := TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
@@ -179,7 +202,6 @@ begin
     VecticalScrollBar.PageSize:= PaintDesk.Height;
     ScrollCount.X:= 0;
     ScrollCount.Y:= 0;
-
 
     HorizontalScrollBar.Min:= 0;
     HorizontalScrollBar.Max:= PaintDesk.Width ;
@@ -214,19 +236,60 @@ begin
     ZoomBox.Caption:='100';
     ZoomBox.TabStop:= true;
     ZoomBox.OnEditingDone:= @ChangeComboBox;
+
+    assignFile (input, 'primary_colors.txt');
+    reset(input);
+
+    i := 0;
+    SetLength(PaletteColors, PaletteGrid.RowCount * PaletteGrid.ColCount);
+    while not EOF do begin
+         read(r, g, b);
+         PaletteColors[i] := RGBToColor(r, g, b);
+         for j := 1 to PaletteGrid.RowCount - 1 do begin
+              if (r < 128) then
+                  r += tint
+              else
+                  r -= tint;
+              if (g < 128) then
+                  g += tint
+              else
+                  g -= tint;
+              if (b < 128) then
+                  b += tint
+              else
+                  b -= tint;
+              PaletteColors[i + (PaletteGrid.ColCount * j)] := RGBToColor(r, g, b);
+         end;
+         inc(i);
+    end;
+    closeFile(input);
 end;
+
+procedure TDesk.PaletteGridMouseDown(Sender: TObject; Button: TMouseButton;
+    Shift: TShiftState; X, Y: Integer);
+var
+    Col, Row: integer;
+begin
+    PaletteGrid.MouseToCell(X, Y, Col, Row);
+    if Button = mbLeft then begin
+        MainColorShape.Brush.Color := PaletteColors[PaletteGrid.ColCount * Row + Col];
+    end;
+    if ssRight in Shift then begin
+        AdditionalColorShape.Brush.Color := PaletteColors[PaletteGrid.ColCount * Row + Col];
+    end;
+    Mcol := col;
+    Mrow := row;
+end;
+
 
 procedure TDesk.ScrollBarsOnScroll(Sender: TObject;
     ScrollCode: TScrollCode; var ScrollPos: Integer);
 begin
     if (Sender as TScrollBar).Name = 'VecticalScrollBar' then begin
-         //showMessage(inttostr(VecticalScrollBar.Position) + '  ' + inttostr(ScrollPos));
          ViewPort.AddDisplacement(0, VecticalScrollBar.Position - ScrollPos);
-         //ShowMessage(IntToStr(VecticalScrollBar.Min) + ' ' + IntToStr(VecticalScrollBar.Max) + ' ' + IntToStr(ScrollPos));
     end
     else begin
         ViewPort.AddDisplacement(HorizontalScrollBar.Position - ScrollPos, 0);
-        //ShowMessage(IntToStr(HorizontalScrollBar.Min) + ' ' + IntToStr(HorizontalScrollBar.Max) + ' ' + IntToStr(ScrollPos));
     end;
     Invalidate;
 end;
@@ -236,7 +299,6 @@ procedure TDesk.OnPaint(Sender: TObject);
 var
     figure: TFigure;
 begin
-    PaintDesk.Canvas.brush.style := bsClear;
     // вывод положения центра ViewPoint
     YcoordinateText.Caption:= FloatToStr(ViewPort.FCenter.y);
     XcoordinateText.Caption:= FloatToStr(ViewPort.FCenter.x);
@@ -251,26 +313,13 @@ begin
        ShowAllItem.Enabled := false;
     ZoomBox.Caption := FloatToStr(round(ViewPort.FZoom * 10000) / 100);
     for figure in Figures do begin
+        PaintDesk.Canvas.brush.style := bsClear;
         figure.Draw(PaintDesk.Canvas);
         ViewPort.FRightBottom.x := max(ViewPort.FRightBottom.x, figure.MaxX);
         ViewPort.FLeftTop.x := min(ViewPort.FLeftTop.x, figure.MinX);
         ViewPort.FLeftTop.Y := min(ViewPort.FLeftTop.Y, figure.MinY);
         ViewPort.FRightBottom.Y := max(ViewPort.FRightBottom.Y, figure.MaxY);
     end;
-
-{    VecticalScrollBar.Min := min(VecticalScrollBar.Min, VecticalScrollBar.Position + round(ViewPort.FCenter.Y - PosCenter.Y));
-    VecticalScrollBar.Max := max(VecticalScrollBar.Max, VecticalScrollBar.Position + round(ViewPort.FCenter.Y - PosCenter.Y));
-
-    HorizontalScrollBar.Min := min(HorizontalScrollBar.Min, HorizontalScrollBar.Position + round(ViewPort.FCenter.X - PosCenter.X));
-    HorizontalScrollBar.Max := max(HorizontalScrollBar.Max, HorizontalScrollBar.Position + round(ViewPort.FCenter.X - PosCenter.X)); }
-
-
-
-{    VecticalScrollBar.Position := VecticalScrollBar.Position + round(ViewPort.FCenter.Y - PosCenter.Y);
-    HorizontalScrollBar.Position := HorizontalScrollBar.Position + round(ViewPort.FCenter.X - PosCenter.X);
-
-    PosCenter.X := ViewPort.FCenter.X;
-    PosCenter.Y := ViewPort.FCenter.Y;}
 end;
 
 
@@ -278,7 +327,7 @@ procedure TDesk.PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
     Shift: TShiftState; X, Y: Integer);
 begin
     if (Button = mbLeft) then begin
-        Tools[IndexTool].Active(Point(X,y));
+        Tools[IndexTool].MouseDown(Point(X,y), MainColorShape.Brush.Color);
         DrawContinue:= true;
         IsMouseDown:= true;
     end

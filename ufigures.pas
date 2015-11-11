@@ -10,17 +10,22 @@ type
     { TFigures }
 
     TFigure = class
-        FPenColor: TColor;
-        FPoints: array of TFloatPoint;
-        procedure AddPoint(point: TPoint);
-        procedure Draw(ACanvas: TCanvas); virtual; abstract;
-        procedure Stranch (point: TPoint); virtual; abstract;
-        constructor Create(point: TPoint; penColor: TColor);
-        function MaxX() : extended;
-        function MinX() : extended;
-        function MaxY() : extended;
-        function MinY() : extended;
-
+        private
+            FPenWidth: integer;
+            FPenStyle: TPenStyle;
+            FPenColor, FBrushColor: TColor;
+        public
+            FPoints: array of TFloatPoint;
+            procedure AddPoint(point: TPoint);
+            procedure Draw(ACanvas: TCanvas); virtual; abstract;
+            procedure Stranch (point: TPoint); virtual; abstract;
+            constructor Create(point: TPoint; penColor: TColor);
+            function MaxX() : extended;
+            function MinX() : extended;
+            function MaxY() : extended;
+            function MinY() : extended;
+        published
+            property PenWidth: integer;
     end;
 
     { TPencil }
@@ -32,25 +37,42 @@ type
     { TPolyline }
 
     TPolyline = class(TPencil)
-        procedure Stranch(point : TPoint); override;
+        public
+            procedure Stranch(point : TPoint); override;
     end;
 
     { TEllipse }
 
     TEllipse = class(TPolyline)
-        procedure Draw(ACanvas: TCanvas); override;
+        public
+            procedure Draw(ACanvas: TCanvas); override;
+        private
+            FBrushStyle: TBrushStyle;
+        published
+            property BrushStyle: TBrushStyle read FBrushStyle write FBrushStyle;
     end;
 
     { TRectangle }
 
     TRectangle = class(TPolyline)
-        procedure Draw(ACanvas: TCanvas); override;
+        public
+            procedure Draw(ACanvas: TCanvas); override;
+        private
+            FBrushStyle: TBrushStyle;
+        published
+            property BrushStyle: TBrushStyle read FBrushStyle write FBrushStyle;
     end;
 
     { TRoundRectangle }
 
     TRoundRectangle = class(TRectangle)
-        procedure Draw(ACanvas: TCanvas); override;
+        private
+            FRadius : integer;
+        public
+            procedure Draw(ACanvas: TCanvas); override;
+        published
+            property Radius: integer read FRadius write FRadius;
+            property BrushStyle: TBrushStyle read FBRushStyle write FBrushStyle;
     end;
 
 var

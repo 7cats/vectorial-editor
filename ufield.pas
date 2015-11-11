@@ -81,8 +81,8 @@ procedure TViewPort.ShowAll();
 begin
     ViewPort.FCenter.x := (FRightBottom.X + FLeftTop.X) / 2;
     ViewPort.FCenter.y := (FRightBottom.Y + FLeftTop.Y) / 2 ;
-    ViewPort.FZoom := min(FPaintBoxSize.Y / abs(WorldToScreen(FRightBottom).Y - WorldToScreen(FLeftTop).Y),
-                          FPaintBoxSize.X / abs(WorldToScreen(FRightBottom).X - WorldToScreen(FLeftTop).X));
+    ViewPort.FZoom := min(FPaintBoxSize.Y /  (FRightBottom.Y - FLeftTop.Y),
+                          FPaintBoxSize.X /  (FRightBottom.X - FLeftTop.X) );
 end;
 
 end.

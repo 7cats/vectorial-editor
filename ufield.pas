@@ -9,6 +9,8 @@ uses
 
 type
 
+    { TFloatPoint }
+
     TFloatPoint = record
         x, y: extended;
     end;
@@ -32,7 +34,6 @@ var
     ViewPort: TViewPort;
 
 implementation
-
 
 { TViewPort }
 

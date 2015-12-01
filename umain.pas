@@ -6,14 +6,15 @@ interface
 
 uses
     Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-    Menus, ComCtrls, StdCtrls, DbCtrls, Grids, UTools, UFigures, UField, Math;
+    Menus, ComCtrls, StdCtrls, DbCtrls, Grids, UTools, UFigures, UField, Math,
+    ULocation;
 
 type
 
     { TDesk }
 
     TDesk = class(TForm)
-            ColorDialog: TColorDialog;
+        ColorDialog: TColorDialog;
         PaletteGrid: TDrawGrid;
         MainMenu: TMainMenu;
         FileMenu: TMenuItem;
@@ -85,7 +86,7 @@ procedure TDesk.PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
     Y: Integer);
 begin
     if (ssLeft in Shift) and (IsMouseDown) and not (Sender is TScrollBar) then begin
-        Tools[IndexTool].MouseMove(point(X,y));
+        Tools[IndexTool].MouseMove(point(X,y), ssShift in Shift);
         Invalidate;
     end;
 end;
@@ -95,7 +96,7 @@ procedure TDesk.PaintDeskMouseUp(Sender: TObject; Button: TMouseButton;
 begin
     if (Button = mbLeft) then begin
         IsMouseDown := False;
-        Tools[IndexTool].MouseUp(point(X,Y));
+        Tools[IndexTool].MouseUp(point(X,Y), ssShift in Shift);
     end;
     Invalidate;
 end;
@@ -326,15 +327,23 @@ begin
         ViewPort.FLeftTop.Y := min(ViewPort.FLeftTop.Y, figure.MinY);
         ViewPort.FRightBottom.Y := max(ViewPort.FRightBottom.Y, figure.MaxY);
     end;
-
 end;
 
 
 procedure TDesk.PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
     Shift: TShiftState; X, Y: Integer);
+var
+    i : integer;
 begin
     if (Button = mbLeft) then begin
-        Tools[IndexTool].MouseDown(Point(X,y), MainColorShape.Brush.Color);
+        if not (ssShift in Shift) then begin
+            for i := 0 to High(Figures) do begin
+                Figures[i].CleanSelect;
+            end;
+        end;
+
+        Tools[IndexTool].MouseDown(Point(X,y), MainColorShape.Brush.Color, ssShift in Shift);
+
         DrawContinue:= true;
         IsMouseDown:= true;
     end

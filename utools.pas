@@ -6,18 +6,20 @@ interface
 
 uses
     Classes, SysUtils, UFigures, Forms, Controls, Graphics, Dialogs,
-    UField, Math;
+    UField, Math, ULocation, LCLIntf, LCLType;
 
 type
 
     { TTool }
 
     TTool = class
-        procedure MouseMove(point : TPoint); virtual; abstract;
+        procedure MouseMove(point : TPoint; shift : boolean); virtual; abstract;
         constructor Create(name : string);
-        procedure MouseDown(point : TPoint; penColor: TColor); virtual; abstract;
+        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); virtual; abstract;
         procedure RightClick(point : TPoint); virtual;
-        procedure MouseUp(point : TPoint); virtual;
+        procedure MouseUp(point : TPoint; shift : boolean); virtual;
+        procedure GiveParam(point : TPoint); virtual; abstract;
+        procedure GetOptions(point : TPoint); virtual; abstract;
         public
             FName: string;
     end;
@@ -25,34 +27,34 @@ type
     { TPencilTool }
 
     TPencilTool = class(TTool)
-        procedure MouseDown(point : TPoint; penColor: TColor); override;
-        procedure MouseMove (point : TPoint); override;
+        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseMove (point : TPoint; shift : boolean); override;
     end;
 
     { TPolylineTool }
 
     TPolylineTool = class(TTool)
-        procedure MouseDown(point : TPoint; penColor: TColor); override;
-        procedure MouseMove (point : TPoint); override;
+        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseMove (point : TPoint; shift : boolean); override;
         procedure RightClick (point : TPoint); override;
     end;
 
     { TEllipseTool }
 
     TEllipseTool = class(TPolylineTool)
-        procedure MouseDown(point : TPoint; penColor: TColor); override;
+        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
     end;
 
-    { TRecnungleTool }
+    { TRecungleTool }
 
-    TRecnungleTool = class(TPolylineTool)
-        procedure MouseDown(point : TPoint; penColor: TColor); override;
+    TRecungleTool = class(TPolylineTool)
+        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
     end;
 
     { TRoundRectangleTool }
 
-    TRoundRectangleTool = class(TRecnungleTool)
-        procedure MouseDown(point : TPoint; penColor: TColor); override;
+    TRoundRectangleTool = class(TRecungleTool)
+        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
     end;
 
     {THandTool}
@@ -60,21 +62,31 @@ type
     THandTool = class(TTool)
         private
             FBeginCoordinate: TFloatPoint;
-            procedure MouseDown(point : TPoint; penColor: TColor); override;
-            procedure MouseMove(point : TPoint); override;
+            procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+            procedure MouseMove(point : TPoint; shift : boolean); override;
     end;
 
     { TZoomTool }
 
     TZoomTool = class(TTool)
-        procedure MouseDown(point : TPoint; penColor: TColor); override;
-        procedure MouseMove(point : TPoint); override;
+        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseMove(point : TPoint; shift : boolean); override;
         procedure RightClick(point: TPoint); override;
-        procedure MouseUp(point : TPoint); override;
+        procedure MouseUp(point : TPoint; shift : boolean); override;
         procedure ClickZoom ();
         procedure RectZoom ();
         private
             FBeginZoomRect, FEndZoomRect: TFloatPoint;
+    end;
+
+    { TSelectionTool }
+
+    TSelectionTool = class(TTool)
+        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseMove(point : TPoint; shift : boolean); override;
+        procedure MouseUp (point: TPoint; shift : boolean); override;
+        private
+            FFirstPoint, FSecondPoint : TPoint;
     end;
 
 var
@@ -95,15 +107,72 @@ begin
     Tools[High(Tools)] := tool;
 end;
 
+{ TSelectionTool }
+
+procedure TSelectionTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+var
+    i : integer;
+begin
+    FFirstPoint := point;
+    FSecondPoint := point;
+    if (not shift) then begin
+{        for i := 0 to High(Figures) do begin
+            Figures[i].CleanSelect;
+        end;  }
+        AddFigure(TRectangle.Create(point, penColor));
+    end;
+end;
+
+procedure TSelectionTool.MouseMove(point: TPoint; shift: boolean);
+var
+    ClickRec : TRect;
+begin
+    if (not shift) then begin
+        FSecondPoint := point;
+
+        Figures[High(Figures)].Stranch(FSecondPoint);
+
+        ClickRec.Left:= min(FFirstPoint.X, FSecondPoint.X);
+        ClickRec.Right := max(FSecondPoint.X, FFirstPoint.X);
+        ClickRec.Top:= min(FFirstPoint.Y, FSecondPoint.Y);
+        ClickRec.Bottom := max(FSecondPoint.Y, FFirstPoint.Y);
+
+        Location.CheckIntersectionAllFigures(ClickRec);
+
+    end
+    else begin
+        FFirstPoint := FSecondPoint;
+        FSecondPoint := point;
+        Location.ChangePos(FFirstPoint.X - FSecondPoint.X, FFirstPoint.Y - FSecondPoint.Y);
+    end;
+
+end;
+
+procedure TSelectionTool.MouseUp(point: TPoint; shift : boolean);
+var
+    ClickRec : TRect;
+begin
+    if (not shift) then begin
+        ClickRec.Left:= min(FFirstPoint.X, FSecondPoint.X);
+        ClickRec.Right := max(FSecondPoint.X, FFirstPoint.X);
+        ClickRec.Top:= min(FFirstPoint.Y, FSecondPoint.Y);
+        ClickRec.Bottom := max(FSecondPoint.Y, FFirstPoint.Y);
+
+        Location.CheckIntersectionAllFigures(ClickRec);
+
+           SetLength(Figures, Max(Length(Figures) - 1, 0));
+    end;
+end;
+
 { TZoomTool }
 
-procedure TZoomTool.MouseDown(point: TPoint; penColor: TColor);
+procedure TZoomTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
 begin
     AddFigure(TRectangle.Create(point, penColor));
     FBeginZoomRect := ViewPort.ScreenToWorld(point);
 end;
 
-procedure TZoomTool.MouseMove(point: TPoint);
+procedure TZoomTool.MouseMove(point: TPoint; shift : boolean);
 begin
     Figures[High(Figures)].Stranch(point);
 end;
@@ -113,7 +182,7 @@ begin
     ViewPort.FZoom := max(0.01, ViewPort.FZoom - 0.09);
 end;
 
-procedure TZoomTool.MouseUp(point: TPoint);
+procedure TZoomTool.MouseUp(point: TPoint; shift : boolean);
 begin
     FEndZoomRect := ViewPort.ScreenToWorld(point);
     SetLength(Figures, Length(Figures) - 1);
@@ -129,7 +198,7 @@ begin
     ViewPort.AddDisplacement(ViewPort.FCenter.X - FBeginZoomRect.X,
                              ViewPort.FCenter.Y - FBeginZoomRect.Y);
     ViewPort.FZoom += 0.09;
-        ViewPort.FZoom := min(50, ViewPort.FZoom);
+    ViewPort.FZoom := min(50, ViewPort.FZoom);
 end;
 
 procedure TZoomTool.RectZoom();
@@ -143,12 +212,12 @@ end;
 
 { THandTool }
 
-procedure THandTool.MouseDown(point: TPoint; penColor: TColor);
+procedure THandTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
 begin
     FBeginCoordinate:= ViewPort.ScreenToWorld(point);
 end;
 
-procedure THandTool.MouseMove(point: TPoint);
+procedure THandTool.MouseMove(point: TPoint; shift : boolean);
 begin
     ViewPort.AddDisplacement(ViewPort.ScreenToWorld(point).x - FBeginCoordinate.x,
                              ViewPort.ScreenToWorld(point).y - FBeginCoordinate.y);
@@ -158,12 +227,12 @@ end;
 
 { TPolylineTool }
 
-procedure TPolylineTool.MouseDown(point: TPoint; penColor: TColor);
+procedure TPolylineTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
 begin
     AddFigure(TPolyline.Create(point, penColor));
 end;
 
-procedure TPolylineTool.MouseMove(point: TPoint);
+procedure TPolylineTool.MouseMove(point: TPoint; shift : boolean);
 begin
     Figures[High(Figures)].Stranch(point);
 end;
@@ -175,14 +244,14 @@ end;
 
 { TRoundRectangleTool }
 
-procedure TRoundRectangleTool.MouseDown(point: TPoint; penColor: TColor);
+procedure TRoundRectangleTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
 begin
     AddFigure(TRoundRectangle.Create(point, penColor));
 end;
 
-{ TRecnungleTool }
+{ TRecungleTool }
 
-procedure TRecnungleTool.MouseDown(point: TPoint; penColor: TColor);
+procedure TRecungleTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
 begin
     AddFigure(TRectangle.Create(point, penColor));
 end;
@@ -190,19 +259,19 @@ end;
 
 { TEllipseTool }
 
-procedure TEllipseTool.MouseDown(point: TPoint; penColor: TColor);
+procedure TEllipseTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
 begin
     AddFigure(TEllipse.Create(point, penColor));
 end;
 
 { TPencilTool }
 
-procedure TPencilTool.MouseDown(point: TPoint; penColor: TColor);
+procedure TPencilTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
 begin
     AddFigure(TPencil.Create(point, penColor));
 end;
 
-procedure TPencilTool.MouseMove(point: TPoint);
+procedure TPencilTool.MouseMove(point: TPoint; shift : boolean);
 begin
     Figures[High(Figures)].AddPoint(point);
 end;
@@ -223,7 +292,7 @@ procedure TTool.RightClick(point: TPoint);
 begin
 end;
 
-procedure TTool.MouseUp(point: TPoint);
+procedure TTool.MouseUp(point: TPoint; shift: boolean);
 begin
 end;
 
@@ -234,9 +303,10 @@ initialization
     AddTool(TPencilTool.Create('pencil'));
     AddTool(TPolylineTool.Create('polyline'));
     AddTool(TEllipseTool.Create('ellipse'));
-    AddTool(TRecnungleTool.Create('rectungle'));
+    AddTool(TRecungleTool.Create('rectungle'));
     AddTool(TRoundRectangleTool.Create('roundrect'));
     AddTool(THandTool.Create('hand'));
     AddTool(TZoomTool.Create('zoom'));
+    AddTool(TSelectionTool.Create('select'));
 end.
 

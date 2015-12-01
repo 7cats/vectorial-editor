@@ -4,17 +4,17 @@ object Desk: TDesk
   Top = 50
   Width = 911
   Caption = 'Desk'
-  ClientHeight = 660
+  ClientHeight = 640
   ClientWidth = 911
   Menu = MainMenu
   OnCreate = FormCreate
   OnMouseMove = PaintDeskMouseMove
   OnMouseUp = PaintDeskMouseUp
   ShowHint = True
-  LCLVersion = '1.0.10.0'
+  LCLVersion = '1.4.0.4'
   object PaintDesk: TPaintBox
     Left = 0
-    Height = 493
+    Height = 473
     Top = 50
     Width = 898
     Align = alClient
@@ -54,7 +54,7 @@ object Desk: TDesk
   object HorizontalScrollBar: TScrollBar
     Left = 0
     Height = 13
-    Top = 543
+    Top = 523
     Width = 911
     Align = alBottom
     LargeChange = 5000
@@ -69,7 +69,7 @@ object Desk: TDesk
   end
   object VecticalScrollBar: TScrollBar
     Left = 898
-    Height = 493
+    Height = 473
     Top = 50
     Width = 13
     Align = alRight
@@ -84,7 +84,7 @@ object Desk: TDesk
   object Panel1: TPanel
     Left = 0
     Height = 104
-    Top = 556
+    Top = 536
     Width = 911
     Align = alBottom
     ClientHeight = 104
@@ -190,3 +190,4 @@ object Desk: TDesk
     left = 48
   end
 end
+

@@ -13,6 +13,7 @@ type
     { TTool }
 
     TTool = class
+        procedure Options(); virtual; abstract;
         procedure MouseMove(point : TPoint; shift : boolean); virtual; abstract;
         constructor Create(name : string);
         procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); virtual; abstract;
@@ -87,6 +88,7 @@ type
         procedure MouseUp (point: TPoint; shift : boolean); override;
         private
             FFirstPoint, FSecondPoint : TPoint;
+            FSelected : boolean;
     end;
 
 var
@@ -113,12 +115,11 @@ procedure TSelectionTool.MouseDown(point: TPoint; penColor: TColor; shift : bool
 var
     i : integer;
 begin
+    FSelected := shift;
     FFirstPoint := point;
     FSecondPoint := point;
-    if (not shift) then begin
-{        for i := 0 to High(Figures) do begin
-            Figures[i].CleanSelect;
-        end;  }
+    if (not FSelected) then begin
+
         AddFigure(TRectangle.Create(point, penColor));
     end;
 end;
@@ -127,7 +128,7 @@ procedure TSelectionTool.MouseMove(point: TPoint; shift: boolean);
 var
     ClickRec : TRect;
 begin
-    if (not shift) then begin
+    if (not FSelected) then begin
         FSecondPoint := point;
 
         Figures[High(Figures)].Stranch(FSecondPoint);
@@ -152,7 +153,7 @@ procedure TSelectionTool.MouseUp(point: TPoint; shift : boolean);
 var
     ClickRec : TRect;
 begin
-    if (not shift) then begin
+    if (not FSelected) then begin
         ClickRec.Left:= min(FFirstPoint.X, FSecondPoint.X);
         ClickRec.Right := max(FSecondPoint.X, FFirstPoint.X);
         ClickRec.Top:= min(FFirstPoint.Y, FSecondPoint.Y);
@@ -160,7 +161,7 @@ begin
 
         Location.CheckIntersectionAllFigures(ClickRec);
 
-           SetLength(Figures, Max(Length(Figures) - 1, 0));
+        SetLength(Figures, Max(Length(Figures) - 1, 0));
     end;
 end;
 

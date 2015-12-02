@@ -91,13 +91,18 @@ procedure TLocation.CheckIntersectionPolyline(ClickReg: TRect; index: integer);
 var
     i : integer;
     fPoint, sPoint : TPoint;
+    isSelect : Boolean = false;
 begin
     for i := 0 to High(Figures[index].FPoints) - 1 do begin
         fPoint := ViewPort.WorldToScreen(Figures[index].FPoints[i]);
         sPoint := ViewPort.WorldToScreen(Figures[index].FPoints[i + 1]);
         if (RectInRegion(CreateRectRgn(fPoint.X - 5, fPoint.Y - 5, sPoint.X + 5, sPoint.Y + 5), ClickReg)) then begin
             Select(index);
+            isSelect := true;
         end;
+    end;
+    if (not isSelect) then begin
+        Deselect(index);
     end;
 end;
 

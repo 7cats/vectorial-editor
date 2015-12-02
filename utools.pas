@@ -13,7 +13,7 @@ type
     { TTool }
 
     TTool = class
-        procedure Options(); virtual; abstract;
+        //procedure GetOutParam(); virtual; abstract;
         procedure MouseMove(point : TPoint; shift : boolean); virtual; abstract;
         constructor Create(name : string);
         procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); virtual; abstract;
@@ -28,6 +28,7 @@ type
     { TPencilTool }
 
     TPencilTool = class(TTool)
+        //procedure GetOutParam(); override;
         procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
         procedure MouseMove (point : TPoint; shift : boolean); override;
     end;
@@ -43,18 +44,21 @@ type
     { TEllipseTool }
 
     TEllipseTool = class(TPolylineTool)
+        //procedure GetOutParam(); override;
         procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
     end;
 
-    { TRecungleTool }
+    { TRectangleTool }
 
-    TRecungleTool = class(TPolylineTool)
+    TRectangleTool = class(TPolylineTool)
+        //procedure GetOutParam(); override;
         procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
     end;
 
     { TRoundRectangleTool }
 
-    TRoundRectangleTool = class(TRecungleTool)
+    TRoundRectangleTool = class(TRectangleTool)
+        //procedure GetOutParam(); override;
         procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
     end;
 
@@ -250,9 +254,9 @@ begin
     AddFigure(TRoundRectangle.Create(point, penColor));
 end;
 
-{ TRecungleTool }
+{ TRectangleTool }
 
-procedure TRecungleTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+procedure TRectangleTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
 begin
     AddFigure(TRectangle.Create(point, penColor));
 end;
@@ -304,7 +308,7 @@ initialization
     AddTool(TPencilTool.Create('pencil'));
     AddTool(TPolylineTool.Create('polyline'));
     AddTool(TEllipseTool.Create('ellipse'));
-    AddTool(TRecungleTool.Create('rectungle'));
+    AddTool(TRectangleTool.Create('rectangle'));
     AddTool(TRoundRectangleTool.Create('roundrect'));
     AddTool(THandTool.Create('hand'));
     AddTool(TZoomTool.Create('zoom'));

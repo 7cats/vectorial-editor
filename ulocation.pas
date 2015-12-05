@@ -52,8 +52,8 @@ end;
 
 procedure TLocation.CheckIntersectionRectungle(ClickReg: TRect; index: integer);
 begin
-    if RectInRegion(CreateRectRgn(Figures[index].Top.X - 5, Figures[index].Top.Y - 5,
-                                      Figures[index].Bottom.X + 5, Figures[index].Bottom.Y + 5),
+    if RectInRegion(CreateRectRgn(ViewPort.WorldToScreen(Figures[index].FPoints[0]).X, ViewPort.WorldToScreen(Figures[index].FPoints[0]).Y,
+                                  ViewPort.WorldToScreen(Figures[index].FPoints[1]).X, ViewPort.WorldToScreen(Figures[index].FPoints[1]).Y),
                                                                                        ClickReg) then begin
         Select(index);
     end
@@ -65,9 +65,8 @@ end;
 procedure TLocation.CheckIntersectionRoundRectungle(ClickReg: TRect;
   index: integer);
 begin
-    if RectInRegion(CreateRoundRectRgn(Figures[index].Top.X - 5, Figures[index].Top.Y - 5,
-                                      Figures[index].Bottom.X + 5, Figures[index].Bottom.Y + 5, 5, 5),
-                                                                                       ClickReg) then begin
+    if   RectInRegion(CreateRoundRectRgn(ViewPort.WorldToScreen(Figures[index].FPoints[0]).X, ViewPort.WorldToScreen(Figures[index].FPoints[0]).Y,
+                                  ViewPort.WorldToScreen(Figures[index].FPoints[1]).X, ViewPort.WorldToScreen(Figures[index].FPoints[1]).Y, 5, 5), ClickReg) then begin
         Select(index);
     end
     else begin
@@ -77,9 +76,8 @@ end;
 
 procedure TLocation.CheckIntersectionEllipce(ClickReg: TRect; index: integer);
 begin
-    if RectInRegion(CreateEllipticRgn(Figures[index].Top.X - 5, Figures[index].Top.Y - 5,
-                                      Figures[index].Bottom.X + 5, Figures[index].Bottom.Y + 5),
-                                                                                       ClickReg) then begin
+    if RectInRegion(CreateEllipticRgn(ViewPort.WorldToScreen(Figures[index].FPoints[0]).X, ViewPort.WorldToScreen(Figures[index].FPoints[0]).Y,
+                                      ViewPort.WorldToScreen(Figures[index].FPoints[1]).X, ViewPort.WorldToScreen(Figures[index].FPoints[1]).Y), ClickReg) then begin
         Select(index);
     end
     else begin
@@ -91,17 +89,12 @@ procedure TLocation.CheckIntersectionPolyline(ClickReg: TRect; index: integer);
 var
     i : integer;
     fPoint, sPoint : TPoint;
-    isSelect : Boolean = false;
 begin
-    for i := 0 to High(Figures[index].FPoints) - 1 do begin
-        fPoint := ViewPort.WorldToScreen(Figures[index].FPoints[i]);
-        sPoint := ViewPort.WorldToScreen(Figures[index].FPoints[i + 1]);
-        if (RectInRegion(CreateRectRgn(fPoint.X - 5, fPoint.Y - 5, sPoint.X + 5, sPoint.Y + 5), ClickReg)) then begin
+    if RectInRegion(CreateRectRgn(ViewPort.WorldToScreen(ViewPort.FloatPoint(Figures[index].MinX(), 0)).X, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, Figures[index].MinY())).Y,
+                                       ViewPort.WorldToScreen(ViewPort.FloatPoint(Figures[index].MaxX(), 0)).X, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, Figures[index].MaxY())).Y), ClickReg) then begin
             Select(index);
-            isSelect := true;
-        end;
-    end;
-    if (not isSelect) then begin
+    end
+    else begin
         Deselect(index);
     end;
 end;
@@ -138,4 +131,5 @@ initialization
     Location := TLocation.Create;
 
 end.
+
 

@@ -27,6 +27,7 @@ type
         procedure AddDisplacement(dispacementX, dispacementY: extended);
         procedure CalcAndAddDisplacement(oldPoint, newPoint: TPoint);
         procedure PaintBoxResize(PbWidth, PbHeight: integer);
+        function FloatPoint(x, y : extended) : TFloatPoint;
         procedure ShowAll ();
     end;
 
@@ -36,6 +37,12 @@ var
 implementation
 
 { TViewPort }
+
+function TViewPort.FloatPoint(x, y : extended) : TFloatPoint;
+begin
+    result.X := x;
+    result.Y := y;
+end;
 
 function TViewPort.WorldToScreen(fpoint: TFloatPoint): TPoint;
 begin
@@ -87,4 +94,5 @@ begin
 end;
 
 end.
+
 

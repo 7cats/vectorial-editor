@@ -52,8 +52,8 @@ end;
 
 procedure TLocation.CheckIntersectionRectungle(ClickReg: TRect; index: integer);
 begin
-    if RectInRegion(CreateRectRgn(ViewPort.WorldToScreen(Figures[index].FPoints[0]).X, ViewPort.WorldToScreen(Figures[index].FPoints[0]).Y,
-                                  ViewPort.WorldToScreen(Figures[index].FPoints[1]).X, ViewPort.WorldToScreen(Figures[index].FPoints[1]).Y),
+    if RectInRegion(CreateRectRgn(ViewPort.WorldToScreen(ViewPort.FloatPoint(Figures[index].MinX(), 0)).X, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, Figures[index].MinY())).Y,
+                                       ViewPort.WorldToScreen(ViewPort.FloatPoint(Figures[index].MaxX(), 0)).X, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, Figures[index].MaxY())).Y),
                                                                                        ClickReg) then begin
         Select(index);
     end
@@ -65,8 +65,8 @@ end;
 procedure TLocation.CheckIntersectionRoundRectungle(ClickReg: TRect;
   index: integer);
 begin
-    if   RectInRegion(CreateRoundRectRgn(ViewPort.WorldToScreen(Figures[index].FPoints[0]).X, ViewPort.WorldToScreen(Figures[index].FPoints[0]).Y,
-                                  ViewPort.WorldToScreen(Figures[index].FPoints[1]).X, ViewPort.WorldToScreen(Figures[index].FPoints[1]).Y, 5, 5), ClickReg) then begin
+    if   RectInRegion(CreateRoundRectRgn(ViewPort.WorldToScreen(ViewPort.FloatPoint(Figures[index].MinX(), 0)).X, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, Figures[index].MinY())).Y,
+                                       ViewPort.WorldToScreen(ViewPort.FloatPoint(Figures[index].MaxX(), 0)).X, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, Figures[index].MaxY())).Y, 5, 5), ClickReg) then begin
         Select(index);
     end
     else begin
@@ -76,8 +76,8 @@ end;
 
 procedure TLocation.CheckIntersectionEllipce(ClickReg: TRect; index: integer);
 begin
-    if RectInRegion(CreateEllipticRgn(ViewPort.WorldToScreen(Figures[index].FPoints[0]).X, ViewPort.WorldToScreen(Figures[index].FPoints[0]).Y,
-                                      ViewPort.WorldToScreen(Figures[index].FPoints[1]).X, ViewPort.WorldToScreen(Figures[index].FPoints[1]).Y), ClickReg) then begin
+    if RectInRegion(CreateEllipticRgn(ViewPort.WorldToScreen(ViewPort.FloatPoint(Figures[index].MinX(), 0)).X, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, Figures[index].MinY())).Y,
+                                       ViewPort.WorldToScreen(ViewPort.FloatPoint(Figures[index].MaxX(), 0)).X, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, Figures[index].MaxY())).Y), ClickReg) then begin
         Select(index);
     end
     else begin

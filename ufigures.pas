@@ -11,9 +11,9 @@ type
 
     TFigure = class
         private
-            FPenWidth: integer;
-            FPenStyle: TPenStyle;
-            FPenColor, FBrushColor: TColor;
+            FPenWidth : integer;
+            FPenStyle : TPenStyle;
+            FPenColor : TColor;
             FSelected : Boolean;
             //procedure SetPenWidth(AValue: integer);
         public
@@ -30,8 +30,9 @@ type
             function MinY() : extended;
             procedure CleanSelect();
         published
-            //property PenWidth: integer read FPenWidth write SetPenWidth;
-            property PenColor: TColor read FPenColor write FPenColor;
+            property Width: integer read FPenWidth write FPenWidth;
+            property PenColor : TColor read FPenColor write FPenColor;
+            property PenStyle : TPenStyle read FPenStyle write FPenStyle;
             property Selected : Boolean read FSelected write FSelected;
     end;
 
@@ -56,9 +57,11 @@ type
         public
             procedure Draw(ACanvas: TCanvas); override;
         private
-            FBrushStyle: TBrushStyle;
+            FBrushStyle : TBrushStyle;
+            FBrushColor : TColor;
         published
-            property BrushStyle: TBrushStyle read FBrushStyle write FBrushStyle;
+            property BrushStyle : TBrushStyle read FBrushStyle write FBrushStyle;
+            property BrushColor : TColor read FBrushColor write FBrushColor;
     end;
 
     { TRectangle }
@@ -67,9 +70,11 @@ type
         public
             procedure Draw(ACanvas: TCanvas); override;
         private
-            FBrushStyle: TBrushStyle;
+            FBrushStyle : TBrushStyle;
+            FBrushColor : TColor;
         published
-            property BrushStyle: TBrushStyle read FBrushStyle write FBrushStyle;
+            property BrushStyle : TBrushStyle read FBrushStyle write FBrushStyle;
+            property BrushColor : TColor read FBrushColor write FBrushColor;
     end;
 
     { TRoundRectangle }
@@ -80,8 +85,7 @@ type
         public
             procedure Draw(ACanvas: TCanvas); override;
         published
-            property Radius: integer read FRadius write FRadius;
-            property BrushStyle: TBrushStyle read FBRushStyle write FBrushStyle;
+            property Radius : integer read FRadius write FRadius;
     end;
 
 var
@@ -191,8 +195,8 @@ constructor TFigure.Create(point: TPoint; penColor: TColor);
 begin
     AddPoint(Point);
     AddPoint(Point);
-    Selected:= false;
-    FPenColor:= penColor;
+    Selected := false;
+    FPenColor := penColor;
 end;
 
 function TFigure.Top: TPoint;

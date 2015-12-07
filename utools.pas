@@ -329,9 +329,6 @@ procedure TTool.MouseUp(point: TPoint; shift: boolean);
 begin
     if (Figures[High(Figures)].MaxY = Figures[High(Figures)].MinY()) and (Figures[High(Figures)].MaxY() = Figures[High(Figures)].MinY()) then begin
         SetLength(Figures, Length(Figures) - 1);
-    end
-    else begin
-        Figures[High(Figures)].Selected := true;
     end;
 end;
 

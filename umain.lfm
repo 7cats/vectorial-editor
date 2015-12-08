@@ -1,11 +1,11 @@
 object Desk: TDesk
-  Left = 365
+  Left = 355
   Height = 660
-  Top = 50
-  Width = 911
+  Top = 80
+  Width = 987
   Caption = 'Desk'
-  ClientHeight = 640
-  ClientWidth = 911
+  ClientHeight = 660
+  ClientWidth = 987
   Menu = MainMenu
   OnCreate = FormCreate
   OnMouseMove = PaintDeskMouseMove
@@ -13,10 +13,10 @@ object Desk: TDesk
   ShowHint = True
   LCLVersion = '1.4.0.4'
   object PaintDesk: TPaintBox
-    Left = 0
-    Height = 473
+    Left = 129
+    Height = 493
     Top = 50
-    Width = 898
+    Width = 845
     Align = alClient
     OnMouseDown = PaintDeskMouseDown
     OnMouseMove = PaintDeskMouseMove
@@ -28,7 +28,7 @@ object Desk: TDesk
     Left = 0
     Height = 50
     Top = 0
-    Width = 911
+    Width = 987
     ButtonHeight = 48
     ButtonWidth = 48
     Color = clWindow
@@ -54,8 +54,8 @@ object Desk: TDesk
   object HorizontalScrollBar: TScrollBar
     Left = 0
     Height = 13
-    Top = 523
-    Width = 911
+    Top = 543
+    Width = 987
     Align = alBottom
     LargeChange = 5000
     Max = 1
@@ -68,8 +68,8 @@ object Desk: TDesk
     OnScroll = ScrollBarsOnScroll
   end
   object VecticalScrollBar: TScrollBar
-    Left = 898
-    Height = 473
+    Left = 974
+    Height = 493
     Top = 50
     Width = 13
     Align = alRight
@@ -84,11 +84,11 @@ object Desk: TDesk
   object Panel1: TPanel
     Left = 0
     Height = 104
-    Top = 536
-    Width = 911
+    Top = 556
+    Width = 987
     Align = alBottom
     ClientHeight = 104
-    ClientWidth = 911
+    ClientWidth = 987
     TabOrder = 5
     object Panel3: TPanel
       Left = 1
@@ -134,6 +134,14 @@ object Desk: TDesk
       OnDrawCell = PaletteGridDrawCell
       OnMouseDown = PaletteGridMouseDown
     end
+  end
+  object FiguresPropPanel: TPanel
+    Left = 0
+    Height = 493
+    Top = 50
+    Width = 129
+    Align = alLeft
+    TabOrder = 6
   end
   object MainMenu: TMainMenu
     object FileMenu: TMenuItem
@@ -190,4 +198,3 @@ object Desk: TDesk
     left = 48
   end
 end
-

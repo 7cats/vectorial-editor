@@ -27,7 +27,7 @@ type
         procedure ClearProp();
         private
             FPropMin : integer;
-            FPropObj : array of TObject;
+            FPropObjs : array of TObject;
             FPropSelected : array of PPropList;
             FWidthEditor, FRaduisEditor : TSpinEdit;
             FPenStyleCB, FBrushStyleCB : TComboBox;
@@ -47,6 +47,7 @@ var
     NewProp : PPropList;
     i, j : integer;
 begin
+    ClearProp();
     ClearEditors();
     HideEditors();
     if (not selectRect) then begin
@@ -73,9 +74,10 @@ var
     i : integer;
 begin
     FPenColor := penC;
-    for i := 0 to High(FPropObj) do begin
-        SetPropValue(FPropObj[i], 'PenColor', FPenColor);
+    for i := 0 to High(FPropObjs) do begin
+        SetPropValue(FPropObjs[i], 'PenColor', FPenColor);
     end;
+    FPb.Invalidate;
 end;
 
 procedure TInspector.SetBrushColor(brushC: TColor);
@@ -83,17 +85,18 @@ var
     i : integer;
 begin
     FBrushColor := brushC;
-    for i := 0 to High(FPropObj) do begin
-        SetPropValue(FPropObj[i], 'BrushColor', FBrushColor);
+    for i := 0 to High(FPropObjs) do begin
+        SetPropValue(FPropObjs[i], 'BrushColor', FBrushColor);
     end;
+    FPb.Invalidate;
 end;
 
 procedure TInspector.GetSelected(obj: TObject);
 begin
     SetLength(FPropSelected, Length(FPropSelected) + 1);
     FPropMin := min(FPropMin, GetPropList(obj, FPropSelected[High(FPropSelected)]));
-    SetLength(FPropObj, Length(FPropObj) + 1);
-    FPropObj[High(FPropObj)] := obj;
+    SetLength(FPropObjs, Length(FPropObjs) + 1);
+    FPropObjs[High(FPropObjs)] := obj;
 end;
 
 procedure TInspector.ShowEditorsSelected(val : integer);
@@ -193,26 +196,26 @@ var
    i : integer;
 begin
     if (FRaduisEditor.Visible) and (FRaduisEditor.Caption <> '' )then begin
-        for i := 0 to High(FPropObj) do begin
-            SetPropValue(FPropObj[i], 'Radius', FRaduisEditor.Caption);
+        for i := 0 to High(FPropObjs) do begin
+            SetPropValue(FPropObjs[i], 'Radius', FRaduisEditor.Caption);
         end;
     end;
 
     if (FWidthEditor.Visible) and (FWidthEditor.Caption <> '') then begin
-        for i := 0 to High(FPropObj) do begin
-            SetPropValue(FPropObj[i], 'Width', FWidthEditor.Value);
+        for i := 0 to High(FPropObjs) do begin
+            SetPropValue(FPropObjs[i], 'Width', FWidthEditor.Value);
         end;
     end;
 
     if (FPenStyleCB.Visible) and (FPenStyleCB.Caption <> '') then begin
-        for i := 0 to High(FPropObj) do begin
-            SetPropValue(FPropObj[i], 'PenStyle', FPenStyleCB.Caption);
+        for i := 0 to High(FPropObjs) do begin
+            SetPropValue(FPropObjs[i], 'PenStyle', FPenStyleCB.Caption);
         end;
     end;
 
     if (FBrushStyleCB.Visible) and (FBrushStyleCB.Caption <> '') then begin
-        for i := 0 to High(FPropObj) do begin
-            SetPropValue(FPropObj[i], 'BrushStyle', FBrushStyleCB.Caption);
+        for i := 0 to High(FPropObjs) do begin
+            SetPropValue(FPropObjs[i], 'BrushStyle', FBrushStyleCB.Caption);
         end;
     end;
 
@@ -246,6 +249,7 @@ procedure TInspector.ClearProp;
 begin
     SetLength(FPropSelected, 0);
     FPropMin := High(Integer);
+    SetLength(FPropObjs, 0);
 end;
 
 constructor TInspector.Create();

@@ -60,12 +60,10 @@
       <Unit4>
         <Filename Value="ufield.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UField"/>
       </Unit4>
       <Unit5>
         <Filename Value="ulocation.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULocation"/>
       </Unit5>
       <Unit6>
         <Filename Value="uinspector.pas"/>

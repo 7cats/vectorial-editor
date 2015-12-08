@@ -15,6 +15,11 @@ type
 
     TDesk = class(TForm)
         ColorDialog: TColorDialog;
+        OpenDialog: TOpenDialog;
+        OpenItem: TMenuItem;
+        SaveDialog: TSaveDialog;
+        SaveItem: TMenuItem;
+        SaveAsItem: TMenuItem;
         PaletteGrid: TDrawGrid;
         MainMenu: TMainMenu;
         FileMenu: TMenuItem;
@@ -38,6 +43,7 @@ type
         ZoomBox: TComboBox;
         procedure AboutMItemClick(Sender: TObject);
         procedure ClearCanvasItemClick(Sender: TObject);
+        procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
         procedure PaletteGridDrawCell(Sender: TObject; aCol, aRow: Integer;
             aRect: TRect; aState: TGridDrawState);
         procedure ExitItemClick(Sender: TObject);
@@ -45,6 +51,7 @@ type
         procedure PaletteGridMouseDown(Sender: TObject; Button: TMouseButton;
             Shift: TShiftState; X, Y: Integer);
         procedure PalleteGridOnDblClick(Sender: TObject);
+        procedure SaveItemClick(Sender: TObject);
         procedure ScrollBarsOnScroll(Sender: TObject;
             ScrollCode: TScrollCode; var ScrollPos: Integer);
         procedure OnPaint(Sender: TObject);
@@ -64,7 +71,7 @@ type
         procedure ScrollBarsChange();
         private
             IndexTool: integer;
-            DrawContinue, IsMouseDown : boolean;
+            DrawContinue, IsMouseDown, isEdited : boolean;
             PosCenter: TFloatPoint;
             ScrollCount: TPoint;
             PaletteColors : array of TColor;
@@ -141,12 +148,33 @@ begin
     Invalidate;
 end;
 
+procedure TDesk.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+begin
+    if isEdited then begin
+        case MessageDlg('Сохранить изменения?', mtConfirmation, mbYesNoCancel, 0) of
+             mrYes : begin
+                          //Save
+                          CanClose := true;
+                     end;
+             mrNo : CanClose := true;
+             mrCancel : CanClose := false;
+        end;
+    end;
+end;
+
 procedure TDesk.PalleteGridOnDblClick(Sender: TObject);
 begin
   if ColorDialog.Execute then begin
       PaletteColors[PaletteGrid.ColCount * Mrow + Mcol] := ColorDialog.Color;
       PaletteGrid.InvalidateCell(Mcol, Mrow);
   end;
+end;
+
+procedure TDesk.SaveItemClick(Sender: TObject);
+begin
+    SaveDialog.Execute;
+    //SaveDialog.FileName;
+    //Save(FileName);
 end;
 
 
@@ -203,6 +231,7 @@ var
     i, j: integer;
     r, g, b: integer;
 begin
+    isEdited := false;
 
     IndexTool:= 0;
     ViewPort := TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
@@ -344,6 +373,7 @@ procedure TDesk.PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
 var
     i : integer;
 begin
+    isEdited := true;
     if (Button = mbLeft) then begin
         if not (ssShift in Shift) then begin
             for i := 0 to High(Figures) do begin

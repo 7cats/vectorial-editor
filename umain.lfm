@@ -1,12 +1,13 @@
 object Desk: TDesk
-  Left = 355
+  Left = 516
   Height = 660
-  Top = 80
+  Top = 381
   Width = 987
   Caption = 'Desk'
-  ClientHeight = 660
+  ClientHeight = 640
   ClientWidth = 987
   Menu = MainMenu
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnMouseMove = PaintDeskMouseMove
   OnMouseUp = PaintDeskMouseUp
@@ -14,7 +15,7 @@ object Desk: TDesk
   LCLVersion = '1.4.0.4'
   object PaintDesk: TPaintBox
     Left = 129
-    Height = 493
+    Height = 473
     Top = 50
     Width = 845
     Align = alClient
@@ -54,7 +55,7 @@ object Desk: TDesk
   object HorizontalScrollBar: TScrollBar
     Left = 0
     Height = 13
-    Top = 543
+    Top = 523
     Width = 987
     Align = alBottom
     LargeChange = 5000
@@ -69,7 +70,7 @@ object Desk: TDesk
   end
   object VecticalScrollBar: TScrollBar
     Left = 974
-    Height = 493
+    Height = 473
     Top = 50
     Width = 13
     Align = alRight
@@ -84,7 +85,7 @@ object Desk: TDesk
   object Panel1: TPanel
     Left = 0
     Height = 104
-    Top = 556
+    Top = 536
     Width = 987
     Align = alBottom
     ClientHeight = 104
@@ -137,7 +138,7 @@ object Desk: TDesk
   end
   object FiguresPropPanel: TPanel
     Left = 0
-    Height = 493
+    Height = 473
     Top = 50
     Width = 129
     Align = alLeft
@@ -146,6 +147,16 @@ object Desk: TDesk
   object MainMenu: TMainMenu
     object FileMenu: TMenuItem
       Caption = 'Файл'
+      object OpenItem: TMenuItem
+        Caption = 'Открыть'
+      end
+      object SaveItem: TMenuItem
+        Caption = 'Сохранить'
+        OnClick = SaveItemClick
+      end
+      object SaveAsItem: TMenuItem
+        Caption = 'Сохранить как...'
+      end
       object ExitMItem: TMenuItem
         Caption = 'Выход'
         OnClick = ExitItemClick
@@ -196,5 +207,11 @@ object Desk: TDesk
       'ColorT=A4A0A0'
     )
     left = 48
+  end
+  object OpenDialog: TOpenDialog
+    left = 100
+  end
+  object SaveDialog: TSaveDialog
+    left = 152
   end
 end

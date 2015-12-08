@@ -112,6 +112,7 @@ procedure TDesk.PanelBarButtonClick(Sender: TObject);
 begin
     IndexTool:= (Sender as TToolButton).Tag;
     DrawContinue:= false;
+    Insp.GetParam(Tools[IndexTool].GetFigure(), false);
 end;
 
 procedure TDesk.ShapeMouseDown(Sender: TObject; Button: TMouseButton;
@@ -271,6 +272,10 @@ begin
          inc(i);
     end;
     closeFile(input);
+
+    Insp.LoadPanel(FiguresPropPanel, PaintDesk);
+    Insp.SetBrushColor(clWhite);
+    Insp.SetPenColor(clBlack);
 end;
 
 procedure TDesk.PaletteGridMouseDown(Sender: TObject; Button: TMouseButton;
@@ -281,9 +286,11 @@ begin
     PaletteGrid.MouseToCell(X, Y, Col, Row);
     if Button = mbLeft then begin
         MainColorShape.Brush.Color := PaletteColors[PaletteGrid.ColCount * Row + Col];
+        Insp.SetPenColor(MainColorShape.Brush.Color);
     end;
     if ssRight in Shift then begin
         AdditionalColorShape.Brush.Color := PaletteColors[PaletteGrid.ColCount * Row + Col];
+        Insp.SetBrushColor(AdditionalColorShape.Brush.Color);
     end;
     Mcol := col;
     Mrow := row;

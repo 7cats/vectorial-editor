@@ -6,7 +6,7 @@ interface
 
 uses
     Classes, SysUtils, UFigures, Forms, Controls, Graphics, Dialogs,
-    UField, Math, ULocation, LCLIntf, LCLType;
+    UField, Math, ULocation, LCLIntf, LCLType, UInspector;
 
 type
 
@@ -17,7 +17,7 @@ type
         function GetFigure() : TObject; virtual;
         procedure MouseMove(point : TPoint; shift : boolean); virtual; abstract;
         constructor Create(name : string);
-        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); virtual; abstract;
+        procedure MouseDown(point : TPoint; shift : boolean); virtual; abstract;
         procedure RightClick(point : TPoint); virtual;
         procedure MouseUp(point : TPoint; shift : boolean); virtual;
         procedure GiveParam(point : TPoint); virtual; abstract;
@@ -31,14 +31,14 @@ type
     TPencilTool = class(TTool)
         //procedure GetOutParam(); override;
         function GetFigure() : TObject; override;
-        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseDown(point : TPoint; shift : boolean); override;
         procedure MouseMove (point : TPoint; shift : boolean); override;
     end;
 
     { TPolylineTool }
 
-    TPolylineTool = class(TTool)
-        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+    TPolylineTool = class(TPencilTool)
+        procedure MouseDown(point : TPoint; shift : boolean); override;
         procedure MouseMove (point : TPoint; shift : boolean); override;
         procedure RightClick (point : TPoint); override;
     end;
@@ -48,7 +48,7 @@ type
     TEllipseTool = class(TPolylineTool)
         //procedure GetOutParam(); override;
         function GetFigure() : TObject; override;
-        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseDown(point : TPoint; shift : boolean); override;
     end;
 
     { TRectangleTool }
@@ -56,7 +56,7 @@ type
     TRectangleTool = class(TPolylineTool)
         //procedure GetOutParam(); override;
         function GetFigure() : TObject; override;
-        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseDown(point : TPoint; shift : boolean); override;
     end;
 
     { TRoundRectangleTool }
@@ -64,7 +64,7 @@ type
     TRoundRectangleTool = class(TRectangleTool)
         //procedure GetOutParam(); override;
         function GetFigure() : TObject; override;
-        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseDown(point : TPoint; shift : boolean); override;
     end;
 
     {THandTool}
@@ -72,14 +72,14 @@ type
     THandTool = class(TTool)
         private
             FBeginCoordinate: TFloatPoint;
-            procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+            procedure MouseDown(point : TPoint; shift : boolean); override;
             procedure MouseMove(point : TPoint; shift : boolean); override;
     end;
 
     { TZoomTool }
 
     TZoomTool = class(TTool)
-        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseDown(point : TPoint; shift : boolean); override;
         procedure MouseMove(point : TPoint; shift : boolean); override;
         procedure RightClick(point: TPoint); override;
         procedure MouseUp(point : TPoint; shift : boolean); override;
@@ -92,7 +92,7 @@ type
     { TSelectionTool }
 
     TSelectionTool = class(TTool)
-        procedure MouseDown(point : TPoint; penColor: TColor; shift : boolean); override;
+        procedure MouseDown(point : TPoint; shift : boolean); override;
         procedure MouseMove(point : TPoint; shift : boolean); override;
         procedure MouseUp (point: TPoint; shift : boolean); override;
         private
@@ -106,10 +106,18 @@ var
 
 implementation
 
+procedure AddFigure(figure: TFigure; isSelect : boolean);
+begin
+    SetLength(Figures, Length(Figures) + 1);
+    Figures[High(Figures)] := figure;
+    Insp.GetParam(Figures[High(Figures)], true);
+end;
+
 procedure AddFigure(figure: TFigure);
 begin
     SetLength(Figures, Length(Figures) + 1);
     Figures[High(Figures)] := figure;
+    Insp.GetParam(Figures[High(Figures)], false);
 end;
 
 procedure AddTool(tool : TTool);
@@ -120,7 +128,7 @@ end;
 
 { TSelectionTool }
 
-procedure TSelectionTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+procedure TSelectionTool.MouseDown(point: TPoint; shift: boolean);
 var
     i : integer;
 begin
@@ -128,8 +136,8 @@ begin
     FFirstPoint := point;
     FSecondPoint := point;
     if (not FSelected) then begin
-
-        AddFigure(TRectangle.Create(point, penColor));
+        Insp.ClearProp();
+        AddFigure(TRectangle.Create(point), true);
     end;
 end;
 
@@ -161,6 +169,7 @@ end;
 procedure TSelectionTool.MouseUp(point: TPoint; shift : boolean);
 var
     ClickRec : TRect;
+    i : integer;
 begin
     if (not FSelected) then begin
         ClickRec.Left:= min(FFirstPoint.X, FSecondPoint.X);
@@ -171,14 +180,21 @@ begin
         Location.CheckIntersectionAllFigures(ClickRec);
 
         SetLength(Figures, Max(Length(Figures) - 1, 0));
+
+        for i := 0 to High(Figures) do begin
+             if (Figures[i].Selected) then begin
+                 Insp.GetSelected(Figures[i]);
+             end;
+        end;
+        Insp.LoadSelected();
     end;
 end;
 
 { TZoomTool }
 
-procedure TZoomTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+procedure TZoomTool.MouseDown(point: TPoint; shift: boolean);
 begin
-    AddFigure(TRectangle.Create(point, penColor));
+    AddFigure(TRectangle.Create(point), true);
     FBeginZoomRect := ViewPort.ScreenToWorld(point);
 end;
 
@@ -222,7 +238,7 @@ end;
 
 { THandTool }
 
-procedure THandTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+procedure THandTool.MouseDown(point: TPoint; shift: boolean);
 begin
     FBeginCoordinate:= ViewPort.ScreenToWorld(point);
 end;
@@ -237,9 +253,9 @@ end;
 
 { TPolylineTool }
 
-procedure TPolylineTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+procedure TPolylineTool.MouseDown(point: TPoint; shift: boolean);
 begin
-    AddFigure(TPolyline.Create(point, penColor));
+    AddFigure(TPolyline.Create(point));
 end;
 
 procedure TPolylineTool.MouseMove(point: TPoint; shift : boolean);
@@ -256,24 +272,24 @@ end;
 
 function TRoundRectangleTool.GetFigure: TObject;
 begin
-    result := TRoundRectangle.create(point(0, 0), 1);
+    result := TRoundRectangle.create(point(0, 0));
 end;
 
-procedure TRoundRectangleTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+procedure TRoundRectangleTool.MouseDown(point: TPoint; shift: boolean);
 begin
-    AddFigure(TRoundRectangle.Create(point, penColor));
+    AddFigure(TRoundRectangle.Create(point));
 end;
 
 { TRectangleTool }
 
 function TRectangleTool.GetFigure: TObject;
 begin
-    Result := TRectangle.Create(point(0, 0), 1);
+    Result := TRectangle.Create(point(0, 0));
 end;
 
-procedure TRectangleTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+procedure TRectangleTool.MouseDown(point: TPoint; shift: boolean);
 begin
-    AddFigure(TRectangle.Create(point, penColor));
+    AddFigure(TRectangle.Create(point));
 end;
 
 
@@ -281,24 +297,24 @@ end;
 
 function TEllipseTool.GetFigure: TObject;
 begin
-    result := TEllipse.Create(point(0, 0), 1);
+    result := TEllipse.Create(point(0, 0));
 end;
 
-procedure TEllipseTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+procedure TEllipseTool.MouseDown(point: TPoint; shift: boolean);
 begin
-    AddFigure(TEllipse.Create(point, penColor));
+    AddFigure(TEllipse.Create(point));
 end;
 
 { TPencilTool }
 
 function TPencilTool.GetFigure: TObject;
 begin
-    result := TPencil.Create(point(0, 0), 1);
+    result := TPencil.Create(point(0, 0));
 end;
 
-procedure TPencilTool.MouseDown(point: TPoint; penColor: TColor; shift : boolean);
+procedure TPencilTool.MouseDown(point: TPoint; shift: boolean);
 begin
-    AddFigure(TPencil.Create(point, penColor));
+    AddFigure(TPencil.Create(point));
 end;
 
 procedure TPencilTool.MouseMove(point: TPoint; shift : boolean);
@@ -308,7 +324,7 @@ end;
 
 function TTool.GetFigure: TObject;
 begin
-    result := Nil;
+    result := TObject.Create();
 end;
 
 constructor TTool.Create(name: string);

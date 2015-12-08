@@ -21,7 +21,7 @@ type
             procedure AddPoint(point: TPoint);
             procedure Draw(ACanvas: TCanvas); virtual; abstract;
             procedure Stranch (point: TPoint); virtual; abstract;
-            constructor Create(point: TPoint; penColor: TColor);
+            constructor Create(point: TPoint);
             function Top() : TPoint;
             function Bottom() : TPoint;
             function MaxX() : extended;
@@ -99,17 +99,24 @@ procedure TRoundRectangle.Draw(ACanvas: TCanvas);
 
 begin
     ACanvas.Pen.Color:= FPenColor;
+    ACanvas.Pen.Style := FPenStyle;
+    ACanvas.Brush.Style := FBrushStyle;
+    ACanvas.Brush.Color := FBrushColor;
+    ACanvas.Pen.Width := FPenWidth;
     ACanvas.RoundRect(ViewPort.WorldToScreen(FPoints[0]).x, ViewPort.WorldToScreen(FPoints[0]).y,
-                    ViewPort.WorldToScreen(FPoints[1]).x, ViewPort.WorldToScreen(FPoints[1]).y, 20, 20);
+                    ViewPort.WorldToScreen(FPoints[1]).x, ViewPort.WorldToScreen(FPoints[1]).y, FRadius, FRadius);
 
     if (Selected) then begin
         //ACanvas.Brush.Style := bsCross;
+        ACanvas.Brush.Style := bsClear;
         ACanvas.Pen.Style := psDot;
         ACanvas.Pen.Color := clRed;
         ACanvas.RoundRect(ViewPort.WorldToScreen(ViewPort.FloatPoint(MinX(), 0)).x - 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MinY())).y - 5,
-                    ViewPort.WorldToScreen(ViewPort.FloatPoint(MaxX(), 0)).x + 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MaxY())).y + 5, 5, 5);
-        ACanvas.Pen.Style := psSolid;
+                    ViewPort.WorldToScreen(ViewPort.FloatPoint(MaxX(), 0)).x + 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MaxY())).y + 5, FRadius, FRadius);
+        ACanvas.Pen.Style := FPenStyle;
         ACanvas.Pen.Color := FPenColor;
+        ACanvas.Brush.Style := FBrushStyle;
+        ACanvas.Brush.Color := FBrushColor;
     end;
 end;
 
@@ -118,17 +125,24 @@ end;
 procedure TEllipse.Draw(ACanvas: TCanvas);
 begin
     ACanvas.Pen.Color:= FPenColor;
+    ACanvas.Pen.Style := FPenStyle;
+    ACanvas.Brush.Style := FBrushStyle;
+    ACanvas.Brush.Color := FBrushColor;
+    ACanvas.Pen.Width := FPenWidth;
     ACanvas.Ellipse(ViewPort.WorldToScreen(FPoints[0]).x, ViewPort.WorldToScreen(FPoints[0]).y,
                   ViewPort.WorldToScreen(FPoints[1]).x, ViewPort.WorldToScreen(FPoints[1]).y);
 
     if (Selected) then begin
         //ACanvas.Brush.Style := bsCross;
+        ACanvas.Brush.Style := bsClear;
         ACanvas.Pen.Style := psDot;
         ACanvas.Pen.Color := clRed;
         ACanvas.Ellipse(ViewPort.WorldToScreen(ViewPort.FloatPoint(MinX(), 0)).x - 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MinY())).y - 5,
                     ViewPort.WorldToScreen(ViewPort.FloatPoint(MaxX(), 0)).x + 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MaxY())).y + 5);
-        ACanvas.Pen.Style := psSolid;
+         ACanvas.Pen.Style := FPenStyle;
         ACanvas.Pen.Color := FPenColor;
+        ACanvas.Brush.Style := FBrushStyle;
+        ACanvas.Brush.Color := FBrushColor;
     end;
 end;
 
@@ -138,16 +152,24 @@ procedure TRectangle.Draw(ACanvas: TCanvas);
 var
     rect : TRect;
 begin
+    ACanvas.Pen.Style := FPenStyle;
+    ACanvas.Brush.Style := FBrushStyle;
+    ACanvas.Brush.Color := FBrushColor;
+    ACanvas.Pen.Color := FPenColor;
+    ACanvas.Pen.Width := FPenWidth;
     ACanvas.Rectangle(ViewPort.WorldToScreen(FPoints[0]).x, ViewPort.WorldToScreen(FPoints[0]).y,
                     ViewPort.WorldToScreen(FPoints[1]).x, ViewPort.WorldToScreen(FPoints[1]).y);
     if (Selected) then begin
         //ACanvas.Brush.Style := bsCross;
+        ACanvas.Brush.Style := bsClear;
         ACanvas.Pen.Style := psDot;
         ACanvas.Pen.Color := clRed;
         ACanvas.Rectangle(ViewPort.WorldToScreen(ViewPort.FloatPoint(MinX(), 0)).x - 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MinY())).y - 5,
                     ViewPort.WorldToScreen(ViewPort.FloatPoint(MaxX(), 0)).x + 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MaxY())).y + 5);
-        ACanvas.Pen.Style := psSolid;
+        ACanvas.Pen.Style := FPenStyle;
         ACanvas.Pen.Color := FPenColor;
+        ACanvas.Brush.Style := FBrushStyle;
+        ACanvas.Brush.Color := FBrushColor;
     end;
 end;
 
@@ -159,17 +181,20 @@ var
 begin
     ACanvas.Pen.Color:= FPenColor;
     ACanvas.MoveTo(ViewPort.WorldToScreen(FPoints[0]));
+    ACanvas.Pen.Style := FPenStyle;
+    ACanvas.Pen.Width := FPenWidth;
 
     for i := 1 to High(FPoints) do begin
         ACanvas.Brush.Style:= bsClear;
         ACanvas.LineTo(ViewPort.WorldToScreen(FPoints[i]));
     end;
     if (Selected) then begin
+        ACanvas.Brush.Style := bsClear;
         ACanvas.Pen.Style := psDot;
         ACanvas.Pen.Color := clRed;
         ACanvas.Rectangle(ViewPort.WorldToScreen(ViewPort.FloatPoint(MinX(), 0)).X - 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MinY())).Y - 5,
                           ViewPort.WorldToScreen(ViewPort.FloatPoint(MaxX(), 0)).X + 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MaxY())).Y + 5);
-        ACanvas.Pen.Style := psSolid;
+        ACanvas.Pen.Style := FPenStyle;
         ACanvas.Pen.Color := FPenColor;
     end;
 end;
@@ -191,12 +216,11 @@ end;
 
 { TFigure }
 
-constructor TFigure.Create(point: TPoint; penColor: TColor);
+constructor TFigure.Create(point: TPoint);
 begin
     AddPoint(Point);
     AddPoint(Point);
     Selected := false;
-    FPenColor := penColor;
 end;
 
 function TFigure.Top: TPoint;

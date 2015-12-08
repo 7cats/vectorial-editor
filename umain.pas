@@ -7,7 +7,7 @@ interface
 uses
     Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
     Menus, ComCtrls, StdCtrls, DbCtrls, Grids, UTools, UFigures, UField, Math,
-    ULocation;
+    ULocation, UInspector;
 
 type
 
@@ -24,6 +24,7 @@ type
         ClearCanvasItem: TMenuItem;
         HorizontalScrollBar: TScrollBar;
         Panel1: TPanel;
+        FiguresPropPanel: TPanel;
         Panel3: TPanel;
         MainColorShape: TShape;
         AdditionalColorShape: TShape;
@@ -201,6 +202,7 @@ var
     i, j: integer;
     r, g, b: integer;
 begin
+
     IndexTool:= 0;
     ViewPort := TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
     DrawContinue:= false;
@@ -342,7 +344,7 @@ begin
             end;
         end;
 
-        Tools[IndexTool].MouseDown(Point(X,y), MainColorShape.Brush.Color, ssShift in Shift);
+        Tools[IndexTool].MouseDown(Point(X,y), ssShift in Shift);
 
         DrawContinue:= true;
         IsMouseDown:= true;

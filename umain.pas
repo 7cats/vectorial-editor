@@ -7,7 +7,7 @@ interface
 uses
     Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
     Menus, ComCtrls, StdCtrls, DbCtrls, Grids, UTools, UFigures, UField, Math,
-    ULocation, UInspector;
+    ULocation, UInspector, DOM, XMLRead, XMLWrite,  typinfo;
 
 type
 
@@ -15,6 +15,7 @@ type
 
     TDesk = class(TForm)
         ColorDialog: TColorDialog;
+        NewItem: TMenuItem;
         OpenDialog: TOpenDialog;
         OpenItem: TMenuItem;
         SaveDialog: TSaveDialog;
@@ -41,9 +42,15 @@ type
         YcoordinateText: TStaticText;
         ToolsBar: TToolBar;
         ZoomBox: TComboBox;
+        function FileNameFromFileAdr(s : string) : string;
+        procedure SetFormCaption;
+        procedure OpenXML (image : TXMLDocument);
+        function CreateXML () : TXMLDocument;
         procedure AboutMItemClick(Sender: TObject);
         procedure ClearCanvasItemClick(Sender: TObject);
         procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
+        procedure NewItemClick(Sender: TObject);
+        procedure OpenItemClick(Sender: TObject);
         procedure PaletteGridDrawCell(Sender: TObject; aCol, aRow: Integer;
             aRect: TRect; aState: TGridDrawState);
         procedure ExitItemClick(Sender: TObject);
@@ -51,6 +58,7 @@ type
         procedure PaletteGridMouseDown(Sender: TObject; Button: TMouseButton;
             Shift: TShiftState; X, Y: Integer);
         procedure PalleteGridOnDblClick(Sender: TObject);
+        procedure SaveAsItemClick(Sender: TObject);
         procedure SaveItemClick(Sender: TObject);
         procedure ScrollBarsOnScroll(Sender: TObject;
             ScrollCode: TScrollCode; var ScrollPos: Integer);
@@ -76,6 +84,7 @@ type
             ScrollCount: TPoint;
             PaletteColors : array of TColor;
             MCol, Mrow: integer;
+            fileName, fileAdr : string;
         public
             { public declarations }
     end;
@@ -135,6 +144,108 @@ begin
     Invalidate;
 end;
 
+function TDesk.FileNameFromFileAdr(s: string): string;
+var
+    i, indexDot : integer;
+begin
+    indexDot := Length(s) - 1;
+    i := Length(s) - 1;
+    while (s[i] <> '/') and (i > 0) do begin
+        if (s[i] = '.') then begin
+            indexDot := i;
+        end;
+        dec(i);
+    end;
+
+    result := Copy(s, i + 1, indexDot);
+end;
+
+procedure TDesk.SetFormCaption;
+var
+    editsibm : char = '*';
+begin
+    if (not isEdited) then begin
+        EditSibm := ' ';
+    end;
+    if (fileAdr <> '') then
+        Desk.Caption := fileAdr + ' ' + editsibm
+    else
+        Desk.Caption := fileName + ' ' + editsibm;
+end;
+
+procedure TDesk.OpenXML(image: TXMLDocument);
+
+function SpiltPoint(t: string):TFloatPoint;
+var
+    s: string;
+begin
+    s := copy(t, 1, pos(' ', t)-1);
+    result.x:= strToFloat(s);
+    result.y:= strToFloat(copy(t, pos(' ', t)+1, length(t)-1-pos(' ', t)));
+end;
+
+var
+    CurrNode: TDOMNode;
+    i, len: integer;
+    fig : TFigure;
+    s: String;
+
+begin
+    SetLength(Figures, 0);
+    try
+        CurrNode := image.DocumentElement.FirstChild;
+        while CurrNode <> nil do begin
+            setLength(Figures, length(Figures)+1);
+            Figures[High(Figures)] :=  TFigure(GetClass(CurrNode.NodeName).Create);
+
+            for i:= 0 to CurrNode.Attributes.Length - 1 do begin
+                SetPropValue(Figures[High(Figures)], CurrNode.Attributes[i].NodeName, CurrNode.Attributes[i].NodeValue);
+            end;
+
+            s:= CurrNode.FirstChild.NodeValue;
+            SetLength(fig.FPoints, 0);
+            len:= 0;
+            while pos(',',s) > 0 do begin
+                inc(len);
+                SetLength(Figures[High(Figures)].FPoints, len);
+                Figures[High(Figures)].FPoints[len-1]:= SpiltPoint(copy(s,1, pos(',',s)));
+                s:=copy(s, pos(',',s) + 1, length(s));
+            end;
+            CurrNode:= CurrNode.NextSibling;
+        end;
+        Figures := Figures;
+    except
+        on E: Exception do begin
+            MessageDlg('Произошла ошибка при открытии файла:'+#13#10+E.Message, mtError,  [mbOK], 0);
+        end;
+    end;
+end;
+
+
+function TDesk.CreateXML: TXMLDocument;
+var
+    RootNode, CurrNode: TDOMNode;
+    i, j, count: integer;
+    list: PPropList;
+    pointS: string;
+begin
+    result:= TXMLDocument.Create;
+    RootNode := Result.CreateElement('file');
+    TDOMElement(RootNode).SetAttribute('version', '1');
+    Result.AppendChild(RootNode);
+    RootNode:= Result.DocumentElement;
+    for i:= 0 to High(Figures) do begin
+        CurrNode := Result.CreateElement(Figures[i].ClassName);
+        count:= GetPropList(Figures[i], list);
+        for j:= 0 to count-1 do
+            TDOMElement(CurrNode).SetAttribute(list^[j]^.Name, String(GetPropValue(Figures[i], list^[j]^.Name)));
+        pointS := '';
+        for j:= 0 to High(Figures[i].FPoints) do
+            pointS +=  FloatToStr(Figures[i].FPoints[j].X) + ' ' + FloatToStr(Figures[i].FPoints[j].Y) + ',';
+        CurrNode.AppendChild(Result.CreateTextNode(pointS));
+        RootNode.AppendChild(CurrNode);
+    end;
+end;
 
 procedure TDesk.AboutMItemClick(Sender: TObject);
 begin
@@ -151,7 +262,7 @@ end;
 procedure TDesk.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
     if isEdited then begin
-        case MessageDlg('Сохранить изменения?', mtConfirmation, mbYesNoCancel, 0) of
+        case MessageDlg('Сохранить изменения в файле' + fileName + '?', mtInformation, mbYesNoCancel, 0) of
              mrYes : begin
                           //Save
                           CanClose := true;
@@ -159,6 +270,45 @@ begin
              mrNo : CanClose := true;
              mrCancel : CanClose := false;
         end;
+    end;
+end;
+
+procedure TDesk.NewItemClick(Sender: TObject);
+begin
+    if isEdited then begin
+        case MessageDlg('Сохранить изменения в файле '+ fileName + '?', mtInformation, [mbYes, mbNo, mbCancel], 0) of
+            mrCancel : exit;
+            mrYes : SaveItemClick(nil);
+        end;
+    end;
+    fileAdr:='';
+    fileName:= 'Безымянный';
+    isEdited := false;
+    SetFormCaption;
+    SetLength(Figures, 0);
+    Invalidate;
+end;
+
+procedure TDesk.OpenItemClick(Sender: TObject);
+var
+   image: TXMLDocument;
+   tmp : string;
+begin
+    if OpenDialog.Execute then begin
+        if isEdited then begin
+            case MessageDlg('Сохранить изменения в файле ' + fileName + '?', mtInformation, mbYesNoCancel, 0) of
+                mrCancel : exit;
+                mrYes : SaveAsItemClick(nil);
+            end;
+        end;
+        tmp := OpenDialog.FileName;
+        fileAdr := tmp;
+        fileName := FileNameFromFileAdr(fileAdr);
+        ReadXMLFile(image, tmp);
+        OpenXML(image);
+        isEdited := false;
+        SetFormCaption;
+        Invalidate;
     end;
 end;
 
@@ -170,11 +320,28 @@ begin
   end;
 end;
 
+procedure TDesk.SaveAsItemClick(Sender: TObject);
+begin
+    if SaveDialog.Execute Then begin
+        WriteXMLFile(CreateXML, SaveDialog.FileName);
+        fileAdr := SaveDialog.FileName;
+        fileName := FileNameFromFileAdr(fileAdr);
+        isEdited := false;
+        SetFormCaption;
+    end;
+end;
+
 procedure TDesk.SaveItemClick(Sender: TObject);
 begin
-    SaveDialog.Execute;
-    //SaveDialog.FileName;
-    //Save(FileName);
+    if (not isEdited) then
+        exit;
+    if (fileAdr = '') then begin
+      SaveAsItemClick(nil);
+      exit;
+    end;
+    WriteXMLFile(CreateXML(), fileAdr);
+    isEdited := false;
+    SetFormCaption;
 end;
 
 
@@ -232,6 +399,9 @@ var
     r, g, b: integer;
 begin
     isEdited := false;
+
+    fileAdr := '';
+    fileName:= 'Безымянный';
 
     IndexTool:= 0;
     ViewPort := TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
@@ -305,6 +475,7 @@ begin
     Insp.LoadPanel(FiguresPropPanel, PaintDesk);
     Insp.SetBrushColor(clWhite);
     Insp.SetPenColor(clBlack);
+    Insp.GetParam(Tools[IndexTool].GetFigure(), false);
 end;
 
 procedure TDesk.PaletteGridMouseDown(Sender: TObject; Button: TMouseButton;
@@ -374,6 +545,8 @@ var
     i : integer;
 begin
     isEdited := true;
+    SetFormCaption;
+
     if (Button = mbLeft) then begin
         if not (ssShift in Shift) then begin
             for i := 0 to High(Figures) do begin

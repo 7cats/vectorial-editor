@@ -9,18 +9,18 @@ uses
 type
     { TFigures }
 
-    TFigure = class
+    TFigure = class(TPersistent)
         private
             FPenWidth : integer;
             FPenStyle : TPenStyle;
             FPenColor : TColor;
             FSelected : Boolean;
-            //procedure SetPenWidth(AValue: integer);
         public
             FPoints: array of TFloatPoint;
             procedure AddPoint(point: TPoint);
             procedure Draw(ACanvas: TCanvas); virtual; abstract;
             procedure Stranch (point: TPoint); virtual; abstract;
+            constructor Create();
             constructor Create(point: TPoint);
             function Top() : TPoint;
             function Bottom() : TPoint;
@@ -275,21 +275,25 @@ begin
     Selected := false;
 end;
 
-
-{ TPencil }
-
-{procedure TFigure.SetPenWidth(AValue: integer);
-begin
-  if FPenWidth=AValue then Exit;
-  FPenWidth:=AValue;
-end;                 }
-
 procedure TFigure.AddPoint(point : TPoint);
 begin
     SetLength(FPoints, Length(FPoints) + 1);
     FPoints[High(FPoints)] := ViewPort.ScreenToWorld(point);
 end;
 
+constructor TFigure.Create;
+begin
+    SetLength(FPoints, 0);
+    Selected := false;
+end;
+
+initialization
+
+    RegisterClass(TEllipse);
+    RegisterClass(TRectangle);
+    RegisterClass(TRoundRectangle);
+    RegisterClass(TPencil);
+    RegisterClass(TPolyline);
 
 end.
 

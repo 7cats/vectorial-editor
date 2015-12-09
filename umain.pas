@@ -215,9 +215,7 @@ begin
         end;
         Figures := Figures;
     except
-        on E: Exception do begin
-            MessageDlg('Произошла ошибка при открытии файла:'+#13#10+E.Message, mtError,  [mbOK], 0);
-        end;
+         ShowMessage('Произошла ошибка при чтении файла.');
     end;
 end;
 
@@ -304,10 +302,13 @@ begin
         tmp := OpenDialog.FileName;
         fileAdr := tmp;
         fileName := FileNameFromFileAdr(fileAdr);
-        ReadXMLFile(image, tmp);
-        OpenXML(image);
-        isEdited := false;
-        SetFormCaption;
+        try
+            ReadXMLFile(image, tmp);
+            OpenXML(image);
+            isEdited := false;
+            SetFormCaption;
+        except on EXmlReadError : ShowMessage ('Произошла ошибка при чтении файла.');
+        end;
         Invalidate;
     end;
 end;

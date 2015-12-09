@@ -64,6 +64,7 @@
       <Unit5>
         <Filename Value="ulocation.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULocation"/>
       </Unit5>
       <Unit6>
         <Filename Value="uinspector.pas"/>

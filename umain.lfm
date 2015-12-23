@@ -149,18 +149,22 @@ object Desk: TDesk
       Caption = 'Файл'
       object NewItem: TMenuItem
         Caption = 'Новый холст'
+        ShortCut = 16462
         OnClick = NewItemClick
       end
       object OpenItem: TMenuItem
         Caption = 'Открыть'
+        ShortCut = 16463
         OnClick = OpenItemClick
       end
       object SaveItem: TMenuItem
         Caption = 'Сохранить'
+        ShortCut = 16467
         OnClick = SaveItemClick
       end
       object SaveAsItem: TMenuItem
         Caption = 'Сохранить как...'
+        ShortCut = 49235
         OnClick = SaveAsItemClick
       end
       object ExitMItem: TMenuItem
@@ -174,6 +178,16 @@ object Desk: TDesk
         Caption = 'Показать все изображение'
         Enabled = False
         OnClick = ShowAllItemClick
+      end
+      object UndoItem: TMenuItem
+        Caption = 'Undo'
+        ShortCut = 16474
+        OnClick = UndoItemClick
+      end
+      object RedoItem: TMenuItem
+        Caption = 'Redo'
+        ShortCut = 16473
+        OnClick = RedoItemClick
       end
       object ClearCanvasItem: TMenuItem
         Caption = 'Очистить лист'

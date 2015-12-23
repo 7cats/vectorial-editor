@@ -17,6 +17,7 @@ type
             FSelected : Boolean;
         public
             FPoints: array of TFloatPoint;
+            function ToBitMap() : TBitmap;
             procedure AddPoint(point: TPoint);
             procedure Draw(ACanvas: TCanvas); virtual; abstract;
             procedure Stranch (point: TPoint); virtual; abstract;
@@ -225,7 +226,7 @@ end;
 
 function TFigure.Top: TPoint;
 begin
-     result := ViewPort.WorldToScreen(FPoints[0]);
+    result := ViewPort.WorldToScreen(FPoints[0]);
 end;
 
 function TFigure.Bottom: TPoint;
@@ -273,6 +274,12 @@ end;
 procedure TFigure.CleanSelect;
 begin
     Selected := false;
+end;
+
+function TFigure.ToBitMap: TBitmap;
+begin
+    Result := TBitmap.Create();
+
 end;
 
 procedure TFigure.AddPoint(point : TPoint);

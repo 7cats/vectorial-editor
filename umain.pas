@@ -7,7 +7,7 @@ interface
 uses
     Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
     Menus, ComCtrls, StdCtrls, DbCtrls, Grids, UTools, UFigures, UField, Math,
-    ULocation, UInspector, DOM, XMLRead, XMLWrite,  typinfo;
+    ULocation, UInspector, DOM, XMLRead, XMLWrite, typinfo, FPImage, FPCanvas;
 
 type
 
@@ -15,6 +15,8 @@ type
 
     TDesk = class(TForm)
         ColorDialog: TColorDialog;
+        RedoItem: TMenuItem;
+        UndoItem: TMenuItem;
         NewItem: TMenuItem;
         OpenDialog: TOpenDialog;
         OpenItem: TMenuItem;
@@ -42,7 +44,11 @@ type
         YcoordinateText: TStaticText;
         ToolsBar: TToolBar;
         ZoomBox: TComboBox;
+        function FiguresToImage() : TBitmap;
+        procedure SaveBitMap(fileAdress : string);
+        function fileFormatFromFileAdr() : string;
         function FileNameFromFileAdr(s : string) : string;
+        procedure RedoItemClick(Sender: TObject);
         procedure SetFormCaption;
         procedure OpenXML (image : TXMLDocument);
         function CreateXML () : TXMLDocument;
@@ -77,14 +83,15 @@ type
         procedure ChangeComboBox(Sender: TObject);
         function IsFloat(str :string): boolean;
         procedure ScrollBarsChange();
+        procedure UndoItemClick(Sender: TObject);
         private
-            IndexTool: integer;
+            IndexTool, IndexHistory: integer;
             DrawContinue, IsMouseDown, isEdited : boolean;
             PosCenter: TFloatPoint;
-            ScrollCount: TPoint;
             PaletteColors : array of TColor;
             MCol, Mrow: integer;
             fileName, fileAdr : string;
+            DrawingHistory : array of TXMLDocument;
         public
             { public declarations }
     end;
@@ -115,8 +122,18 @@ begin
         IsMouseDown := False;
         Tools[IndexTool].MouseUp(point(X,Y), ssShift in Shift);
     end;
+
+    if (Tools[IndexTool].isEdit()) then begin
+        if (IndexHistory <> High(DrawingHistory)) then begin
+            SetLength(DrawingHistory, IndexHistory + 1);
+        end;
+        SetLength(DrawingHistory, Length(DrawingHistory) + 1);
+        DrawingHistory[High(DrawingHistory)] := CreateXML();
+        inc(IndexHistory);
+        end;
     Invalidate;
 end;
+
 
 procedure TDesk.PaintDeskResize(Sender: TObject);
 begin
@@ -144,6 +161,68 @@ begin
     Invalidate;
 end;
 
+function TDesk.FiguresToImage: TBitmap;
+var
+    i : integer;
+    tmpCenter : TFloatPoint;
+    tmpZoom : extended;
+begin
+    Result := TBitmap.Create();
+    tmpCenter := ViewPort.FCenter;
+    tmpZoom := ViewPort.FZoom;
+    ViewPort.ShowAll();
+
+    Result.Width := ViewPort.WorldToScreen( ViewPort.FRightBottom ).X + ViewPort.WorldToScreen( ViewPort.FLeftTop ).X;
+    Result.Height :=  ViewPort.WorldToScreen( ViewPort.FRightBottom ).Y + ViewPort.WorldToScreen( ViewPort.FLeftTop ).Y;
+    Result.Canvas.Brush.Color := clWhite;
+    Result.Canvas.Rectangle(0, 0, Result.Width, Result.Height);
+
+    for i := 0 to High(Figures) do begin
+        Figures[i].Draw(result.Canvas);
+    end;
+
+    ViewPort.FZoom := tmpZoom;
+    ViewPort.FCenter := tmpCenter;
+    Invalidate;
+end;
+
+procedure TDesk.SaveBitMap(fileAdress: string);
+var
+    image : TBitmap;
+    jpeg : TJPEGImage;
+    png : TPortableNetworkGraphic;
+begin
+    image := TBitmap.Create();
+    image := FiguresToImage();
+    if (fileFormatFromFileAdr() = 'jpeg') then begin
+        jpeg := TJPEGImage.Create();
+        jpeg.Assign(image);
+        jpeg.SaveToFile(fileAdress);
+    end
+    else if (fileFormatFromFileAdr() = 'png') then begin
+         png := TPortableNetworkGraphic.Create;
+         png.Assign(image);
+         png.SaveToFile(fileAdress);
+    end
+    else if (fileFormatFromFileAdr() = 'bmp') then begin
+         image.SaveToFile(fileAdress);
+    end
+    else begin
+        Raise Exception.Create('Type of image is`t danied');
+    end;
+end;
+
+function TDesk.fileFormatFromFileAdr: string;
+var
+    i : integer;
+begin
+    i := Length(fileAdr) - 1;
+    while (fileAdr[i] <> '.') and (i > 0) do begin
+        dec(i);
+    end;
+    result := Copy(fileAdr, i + 1, Length(fileAdr) - 1);
+end;
+
 function TDesk.FileNameFromFileAdr(s: string): string;
 var
     i, indexDot : integer;
@@ -158,6 +237,20 @@ begin
     end;
 
     result := Copy(s, i + 1, indexDot);
+end;
+
+procedure TDesk.UndoItemClick(Sender: TObject);
+begin
+    IndexHistory := max(IndexHistory - 1, 0);
+    OpenXML(DrawingHistory[IndexHistory]);
+    Invalidate;
+end;
+
+procedure TDesk.RedoItemClick(Sender: TObject);
+begin
+    IndexHistory := min(IndexHistory + 1,  High(DrawingHistory));
+    OpenXML(DrawingHistory[IndexHistory]);
+    Invalidate;
 end;
 
 procedure TDesk.SetFormCaption;
@@ -175,45 +268,46 @@ end;
 
 procedure TDesk.OpenXML(image: TXMLDocument);
 
-function SpiltPoint(t: string):TFloatPoint;
+function SpiltPoint(coords: string):TFloatPoint;
 var
     s: string;
 begin
-    s := copy(t, 1, pos(' ', t)-1);
-    result.x:= strToFloat(s);
-    result.y:= strToFloat(copy(t, pos(' ', t)+1, length(t)-1-pos(' ', t)));
+    s := copy(coords, 1, pos(' ', coords) - 1);
+    result.x := strToFloat(s);
+    result.y := strToFloat(copy(coords, pos(' ', coords) + 1, length(coords) - 1 - pos(' ', coords)));
 end;
 
 var
     CurrNode: TDOMNode;
     i, len: integer;
-    fig : TFigure;
-    s: String;
+    newFigures : array of TFigure;
+
+    str: String;
 
 begin
-    SetLength(Figures, 0);
+    SetLength(newFigures, 0);
     try
         CurrNode := image.DocumentElement.FirstChild;
         while CurrNode <> nil do begin
-            setLength(Figures, length(Figures)+1);
-            Figures[High(Figures)] :=  TFigure(GetClass(CurrNode.NodeName).Create);
+            setLength(newFigures, length(newFigures) + 1);
+            newFigures[High(newFigures)] :=  TFigure(GetClass(CurrNode.NodeName).Create);
 
-            for i:= 0 to CurrNode.Attributes.Length - 1 do begin
-                SetPropValue(Figures[High(Figures)], CurrNode.Attributes[i].NodeName, CurrNode.Attributes[i].NodeValue);
+            for i := 0 to CurrNode.Attributes.Length - 1 do begin
+                SetPropValue(newFigures[High(newFigures)], CurrNode.Attributes[i].NodeName, CurrNode.Attributes[i].NodeValue);
             end;
 
-            s:= CurrNode.FirstChild.NodeValue;
-            SetLength(fig.FPoints, 0);
-            len:= 0;
-            while pos(',',s) > 0 do begin
+            str := CurrNode.FirstChild.NodeValue;
+            SetLength(newfigures[High(newFigures)].FPoints, 0);
+            len := 0;
+            while pos(',', str) > 0 do begin
                 inc(len);
-                SetLength(Figures[High(Figures)].FPoints, len);
-                Figures[High(Figures)].FPoints[len-1]:= SpiltPoint(copy(s,1, pos(',',s)));
-                s:=copy(s, pos(',',s) + 1, length(s));
+                SetLength(newFigures[High(newFigures)].FPoints, len);
+                newFigures[High(newFigures)].FPoints[len - 1] := SpiltPoint(copy(str, 1, pos(',',str)));
+                str := copy(str, pos(',',str) + 1, length(str));
             end;
-            CurrNode:= CurrNode.NextSibling;
+            CurrNode := CurrNode.NextSibling;
         end;
-        Figures := Figures;
+        Figures := newFigures;
     except
          ShowMessage('Произошла ошибка при чтении файла.');
     end;
@@ -224,21 +318,21 @@ function TDesk.CreateXML: TXMLDocument;
 var
     RootNode, CurrNode: TDOMNode;
     i, j, count: integer;
-    list: PPropList;
-    pointS: string;
+    list : PPropList;
+    pointS : string;
 begin
-    result:= TXMLDocument.Create;
+    result := TXMLDocument.Create;
     RootNode := Result.CreateElement('file');
     TDOMElement(RootNode).SetAttribute('version', '1');
     Result.AppendChild(RootNode);
-    RootNode:= Result.DocumentElement;
-    for i:= 0 to High(Figures) do begin
+    RootNode := Result.DocumentElement;
+    for i := 0 to High(Figures) do begin
         CurrNode := Result.CreateElement(Figures[i].ClassName);
-        count:= GetPropList(Figures[i], list);
-        for j:= 0 to count-1 do
+        count := GetPropList(Figures[i], list);
+        for j := 0 to count - 1 do
             TDOMElement(CurrNode).SetAttribute(list^[j]^.Name, String(GetPropValue(Figures[i], list^[j]^.Name)));
         pointS := '';
-        for j:= 0 to High(Figures[i].FPoints) do
+        for j := 0 to High(Figures[i].FPoints) do
             pointS +=  FloatToStr(Figures[i].FPoints[j].X) + ' ' + FloatToStr(Figures[i].FPoints[j].Y) + ',';
         CurrNode.AppendChild(Result.CreateTextNode(pointS));
         RootNode.AppendChild(CurrNode);
@@ -260,9 +354,9 @@ end;
 procedure TDesk.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
     if isEdited then begin
-        case MessageDlg('Сохранить изменения в файле' + fileName + '?', mtInformation, mbYesNoCancel, 0) of
+        case MessageDlg('Сохранить изменения в файле ' + fileName + '?', mtInformation, mbYesNoCancel, 0) of
              mrYes : begin
-                          //Save
+                          SaveItemClick(nil);
                           CanClose := true;
                      end;
              mrNo : CanClose := true;
@@ -301,14 +395,11 @@ begin
         end;
         tmp := OpenDialog.FileName;
         fileAdr := tmp;
-        fileName := FileNameFromFileAdr(fileAdr);
-        try
-            ReadXMLFile(image, tmp);
-            OpenXML(image);
-            isEdited := false;
-            SetFormCaption;
-        except on EXmlReadError : ShowMessage ('Произошла ошибка при чтении файла.');
-        end;
+        fileName := ExtractFileName(fileAdr);
+        ReadXMLFile(image, tmp);
+        OpenXML(image);
+        isEdited := false;
+        SetFormCaption;
         Invalidate;
     end;
 end;
@@ -324,9 +415,15 @@ end;
 procedure TDesk.SaveAsItemClick(Sender: TObject);
 begin
     if SaveDialog.Execute Then begin
-        WriteXMLFile(CreateXML, SaveDialog.FileName);
         fileAdr := SaveDialog.FileName;
-        fileName := FileNameFromFileAdr(fileAdr);
+        fileName := ExtractFileName(fileAdr);
+        case (fileFormatFromFileAdr) of
+            'xml' : WriteXMLFile(CreateXML(), SaveDialog.FileName);
+            'jpeg' : SaveBitMap(SaveDialog.FileName);
+            'bmp' : SaveBitMap(SaveDialog.FileName);
+            'png' : SaveBitMap(SaveDialog.FileName);
+           // 'svg' : SaveSVG();
+        end;
         isEdited := false;
         SetFormCaption;
     end;
@@ -340,7 +437,13 @@ begin
       SaveAsItemClick(nil);
       exit;
     end;
-    WriteXMLFile(CreateXML(), fileAdr);
+    case (fileFormatFromFileAdr) of
+        'xml' : WriteXMLFile(CreateXML(), fileAdr);
+        'jpeg' : SaveBitMap(fileAdr);
+        'bmp' : SaveBitMap(fileAdr);
+        'png' : SaveBitMap(fileAdr);
+     //   'svg' : ;
+    end;
     isEdited := false;
     SetFormCaption;
 end;
@@ -400,7 +503,7 @@ var
     r, g, b: integer;
 begin
     isEdited := false;
-
+    IndexHistory := 0;
     fileAdr := '';
     fileName:= 'Безымянный';
 
@@ -410,13 +513,10 @@ begin
     VecticalScrollBar.Min:= 0;
     VecticalScrollBar.Max:= PaintDesk.Height;
     VecticalScrollBar.Position:= PaintDesk.Height div 2;
-    //VecticalScrollBar.PageSize:= PaintDesk.Height;
-
 
     HorizontalScrollBar.Min:= 0;
     HorizontalScrollBar.Max:= PaintDesk.Width;
     HorizontalScrollBar.Position:= PaintDesk.Width div 2;
-    //HorizontalScrollBar.PageSize:= PaintDesk.Width;
 
     ViewPort.AddDisplacement(PaintDesk.Width / 2, PaintDesk.Height / 2);
     PosCenter.X := ViewPort.FCenter.X;
@@ -477,6 +577,9 @@ begin
     Insp.SetBrushColor(clWhite);
     Insp.SetPenColor(clBlack);
     Insp.GetParam(Tools[IndexTool].GetFigure(), false);
+
+    SetLength(DrawingHistory, Length(DrawingHistory) + 1);
+    DrawingHistory[High(DrawingHistory)] := CreateXML();
 end;
 
 procedure TDesk.PaletteGridMouseDown(Sender: TObject; Button: TMouseButton;
@@ -545,8 +648,10 @@ procedure TDesk.PaintDeskMouseDown(Sender: TObject; Button: TMouseButton;
 var
     i : integer;
 begin
-    isEdited := true;
-    SetFormCaption;
+    if (Tools[IndexTool].isEdit()) then begin
+        isEdited := true;
+        SetFormCaption;
+    end;
 
     if (Button = mbLeft) then begin
         if not (ssShift in Shift) then begin

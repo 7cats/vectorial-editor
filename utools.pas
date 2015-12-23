@@ -13,8 +13,8 @@ type
     { TTool }
 
     TTool = class
-        //procedure GetOutParam(); virtual; abstract;
         function GetFigure() : TObject; virtual;
+        function isEdit() : Boolean; virtual; abstract;
         procedure MouseMove(point : TPoint; shift : boolean); virtual; abstract;
         constructor Create(name : string);
         procedure MouseDown(point : TPoint; shift : boolean); virtual; abstract;
@@ -29,7 +29,7 @@ type
     { TPencilTool }
 
     TPencilTool = class(TTool)
-        //procedure GetOutParam(); override;
+        function isEdit() : Boolean; override;
         function GetFigure() : TObject; override;
         procedure MouseDown(point : TPoint; shift : boolean); override;
         procedure MouseMove (point : TPoint; shift : boolean); override;
@@ -46,7 +46,6 @@ type
     { TEllipseTool }
 
     TEllipseTool = class(TPolylineTool)
-        //procedure GetOutParam(); override;
         function GetFigure() : TObject; override;
         procedure MouseDown(point : TPoint; shift : boolean); override;
     end;
@@ -54,7 +53,6 @@ type
     { TRectangleTool }
 
     TRectangleTool = class(TPolylineTool)
-        //procedure GetOutParam(); override;
         function GetFigure() : TObject; override;
         procedure MouseDown(point : TPoint; shift : boolean); override;
     end;
@@ -62,7 +60,6 @@ type
     { TRoundRectangleTool }
 
     TRoundRectangleTool = class(TRectangleTool)
-        //procedure GetOutParam(); override;
         function GetFigure() : TObject; override;
         procedure MouseDown(point : TPoint; shift : boolean); override;
     end;
@@ -70,6 +67,7 @@ type
     {THandTool}
 
     THandTool = class(TTool)
+        function isEdit() : Boolean; override;
         private
             FBeginCoordinate: TFloatPoint;
             procedure MouseDown(point : TPoint; shift : boolean); override;
@@ -79,6 +77,7 @@ type
     { TZoomTool }
 
     TZoomTool = class(TTool)
+        function isEdit() : Boolean; override;
         procedure MouseDown(point : TPoint; shift : boolean); override;
         procedure MouseMove(point : TPoint; shift : boolean); override;
         procedure RightClick(point: TPoint); override;
@@ -92,6 +91,7 @@ type
     { TSelectionTool }
 
     TSelectionTool = class(TTool)
+        function isEdit() : Boolean; override;
         procedure MouseDown(point : TPoint; shift : boolean); override;
         procedure MouseMove(point : TPoint; shift : boolean); override;
         procedure MouseUp (point: TPoint; shift : boolean); override;
@@ -127,6 +127,11 @@ begin
 end;
 
 { TSelectionTool }
+
+function TSelectionTool.isEdit: Boolean;
+begin
+    result := true;
+end;
 
 procedure TSelectionTool.MouseDown(point: TPoint; shift: boolean);
 var
@@ -192,6 +197,11 @@ end;
 
 { TZoomTool }
 
+function TZoomTool.isEdit: Boolean;
+begin
+    result := false;
+end;
+
 procedure TZoomTool.MouseDown(point: TPoint; shift: boolean);
 begin
     AddFigure(TRectangle.Create(point), true);
@@ -237,6 +247,11 @@ begin
 end;
 
 { THandTool }
+
+function THandTool.isEdit: Boolean;
+begin
+    result := false;
+end;
 
 procedure THandTool.MouseDown(point: TPoint; shift: boolean);
 begin
@@ -307,6 +322,11 @@ end;
 
 { TPencilTool }
 
+function TPencilTool.isEdit: Boolean;
+begin
+    result := true;
+end;
+
 function TPencilTool.GetFigure: TObject;
 begin
     result := TPencil.Create(point(0, 0));
@@ -343,7 +363,7 @@ end;
 
 procedure TTool.MouseUp(point: TPoint; shift: boolean);
 begin
-    if (Figures[High(Figures)].MaxY = Figures[High(Figures)].MinY()) and (Figures[High(Figures)].MaxY() = Figures[High(Figures)].MinY()) then begin
+    if (Length(Figures) > 0) and  (Figures[High(Figures)].MaxY = Figures[High(Figures)].MinY()) and (Figures[High(Figures)].MaxY() = Figures[High(Figures)].MinY()) then begin
         SetLength(Figures, Length(Figures) - 1);
     end;
 end;

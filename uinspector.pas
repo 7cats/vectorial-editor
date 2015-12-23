@@ -53,10 +53,22 @@ begin
     if (not selectRect) then begin
         for i := 0 to GetPropList(obj, NewProp) - 1 do begin
             case (NewProp^[i]^.Name) of
-                 'Width' : begin FWidthEditor.Visible := true; SetInt64Prop(obj, NewProp^[i], FWidthEditor.Value); end;
-                 'PenStyle' : begin FPenStyleCB.Visible := true;  SetPropValue(obj, 'PenStyle', FPenStyleCB.Caption); end;
-                 'BrushStyle' : begin FBrushStyleCB.Visible := true; SetPropValue(obj, 'BrushStyle', FBrushStyleCB.Caption); end;
-                 'Radius' : begin FRaduisEditor.Visible := true;  SetInt64Prop(obj, NewProp^[i], FRaduisEditor.Value); end;
+                 'Width' : begin
+                               FWidthEditor.Visible := true;
+                               SetInt64Prop(obj, NewProp^[i], FWidthEditor.Value);
+                           end;
+                 'PenStyle' : begin
+                                  FPenStyleCB.Visible := true;
+                                  SetPropValue(obj, 'PenStyle', FPenStyleCB.Caption);
+                              end;
+                 'BrushStyle' : begin
+                                    FBrushStyleCB.Visible := true;
+                                    SetPropValue(obj, 'BrushStyle', FBrushStyleCB.Caption);
+                                end;
+                 'Radius' : begin
+                                FRaduisEditor.Visible := true;
+                                SetInt64Prop(obj, NewProp^[i], FRaduisEditor.Value);
+                            end;
                  'PenColor' : SetPropValue(obj, 'PenColor', FPenColor);
                  'BrushColor' : SetPropValue(obj, 'BrushColor', FBrushColor);
             end;

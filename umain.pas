@@ -11,6 +11,8 @@ uses
 
 type
 
+    TImageType = (bmp, png, jpg, xml, svg);
+
     { TDesk }
 
     TDesk = class(TForm)
@@ -44,11 +46,13 @@ type
         YcoordinateText: TStaticText;
         ToolsBar: TToolBar;
         ZoomBox: TComboBox;
+        procedure SaveVector(filterIndex : integer);
         function FiguresToImage() : TBitmap;
-        procedure SaveBitMap(fileAdress : string);
+        procedure SaveBitMap(filterIndex : integer);
         function fileFormatFromFileAdr() : string;
         function FileNameFromFileAdr(s : string) : string;
         procedure RedoItemClick(Sender: TObject);
+        procedure SaveSVG();
         procedure SetFormCaption;
         procedure OpenXML (image : TXMLDocument);
         function CreateXML () : TXMLDocument;
@@ -105,6 +109,11 @@ implementation
 
 { TDesk }
 
+procedure AddToHistory();
+begin
+ //   SetLength(DrawingHistory, Length(DrawingHisory);
+   // DrawingHistory[High(DrawingHistory)] :=
+end;
 
 procedure TDesk.PaintDeskMouseMove(Sender: TObject; Shift: TShiftState; X,
     Y: Integer);
@@ -161,6 +170,23 @@ begin
     Invalidate;
 end;
 
+procedure TDesk.SaveVector(filterIndex: integer);
+begin
+    case (filterIndex - 1) of
+        ord(TImageType.xml) : begin
+                                  WriteXML(CreateXML(), fileAdr + '.xml');
+                                  fileAdr += '.xml';
+                                  fileName += '.xml';
+                              end;
+        Ord(TImageType.svg) : begin
+                                  fileAdr += '.svg';
+                                  fileName += '.svg';
+                                  SaveSVG();
+
+                              end;
+    end;
+end;
+
 function TDesk.FiguresToImage: TBitmap;
 var
     i : integer;
@@ -186,30 +212,37 @@ begin
     Invalidate;
 end;
 
-procedure TDesk.SaveBitMap(fileAdress: string);
+procedure TDesk.SaveBitMap(filterIndex: integer);
 var
-    image : TBitmap;
-    jpeg : TJPEGImage;
-    png : TPortableNetworkGraphic;
+    bitmap : TBitmap;
+    jpegimage : TJPEGImage;
+    pngimage : TPortableNetworkGraphic;
 begin
-    image := TBitmap.Create();
-    image := FiguresToImage();
-    if (fileFormatFromFileAdr() = 'jpeg') then begin
-        jpeg := TJPEGImage.Create();
-        jpeg.Assign(image);
-        jpeg.SaveToFile(fileAdress);
-    end
-    else if (fileFormatFromFileAdr() = 'png') then begin
-         png := TPortableNetworkGraphic.Create;
-         png.Assign(image);
-         png.SaveToFile(fileAdress);
-    end
-    else if (fileFormatFromFileAdr() = 'bmp') then begin
-         image.SaveToFile(fileAdress);
-    end
-    else begin
-        Raise Exception.Create('Type of image is`t danied');
-    end;
+    bitmap := TBitmap.Create();
+    bitmap := FiguresToImage();
+    case (filterIndex - 1) of
+        ord(TImageType.bmp) : begin
+                                  bitmap.SaveToFile(fileAdr + '.bmp');
+                                  fileName += '.bmp';
+                                  fileAdr += '.bmp';
+                              end;
+        ord(TImageType.png) : begin
+                                   pngimage := TPortableNetworkGraphic.Create;
+                                   pngimage.Assign(bitmap);
+                                   pngimage.SaveToFile(fileAdr + '.png');
+                                   fileName += '.png';
+                                   fileAdr += '.png';
+                               end;
+        ord(TImageType.jpg) : begin
+                                  jpegimage := TJPEGImage.Create();
+                                  jpegimage.Assign(bitmap);
+                                  jpegimage.SaveToFile(fileAdr + '.jpg');
+                                  fileName += '.jpg';
+                                  fileAdr += '.jpg';
+                              end;
+        else
+            Raise Exception.Create('Type of image is`t danied!');
+        end;
 end;
 
 function TDesk.fileFormatFromFileAdr: string;
@@ -251,6 +284,37 @@ begin
     IndexHistory := min(IndexHistory + 1,  High(DrawingHistory));
     OpenXML(DrawingHistory[IndexHistory]);
     Invalidate;
+end;
+
+procedure TDesk.SaveSVG;
+var
+    Root, Curr : TDOMElement;
+    xml : TXMLDocument;
+    i : integer;
+begin
+    xml := TXMLDocument.Create();
+    root := xml.CreateElement('svg');
+    root.SetAttribute('version', '1.1');
+    root.SetAttribute('baseProfile', 'full');
+    root.SetAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    root.SetAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    root.SetAttribute('xmlns:ev', 'http://www.w3.org/2001/xml-events');
+    root.SetAttribute('height', '400px');
+    root.SetAttribute('width', '400px');
+
+    for i := 0 to High(Figures) do begin
+        if (Figures[i].ClassName = 'TPencil') or (Figures[i].ClassName = 'TPolyline') then begin
+             Curr := xml.CreateElement('');
+        end
+        else if (Figures[i].ClassName = 'TEllipse') then begin
+            ShowMessage('');
+        end
+        else if (Figures[i].ClassName = 'TRectangle') or (Figures[i].ClassName = 'TRoundRectangle') then begin
+            Curr := xml.CreateElement('rect');
+        end;
+    end;
+
+    WriteXMLFile(xml, fileAdr);
 end;
 
 procedure TDesk.SetFormCaption;
@@ -316,14 +380,13 @@ end;
 
 function TDesk.CreateXML: TXMLDocument;
 var
-    RootNode, CurrNode: TDOMNode;
+    RootNode, CurrNode : TDOMElement;
     i, j, count: integer;
     list : PPropList;
     pointS : string;
 begin
-    result := TXMLDocument.Create;
+    result := TXMLDocument.Create();
     RootNode := Result.CreateElement('file');
-    TDOMElement(RootNode).SetAttribute('version', '1');
     Result.AppendChild(RootNode);
     RootNode := Result.DocumentElement;
     for i := 0 to High(Figures) do begin
@@ -346,6 +409,8 @@ end;
 
 procedure TDesk.ClearCanvasItemClick(Sender: TObject);
 begin
+    SetLength(DrawingHistory, Length(DrawingHistory) + 1);
+
     SetLength(Figures, 0);
     ViewPort:= TViewPort.Create(PaintDesk.Width, PaintDesk.Height);
     Invalidate;
@@ -368,7 +433,7 @@ end;
 procedure TDesk.NewItemClick(Sender: TObject);
 begin
     if isEdited then begin
-        case MessageDlg('Сохранить изменения в файле '+ fileName + '?', mtInformation, [mbYes, mbNo, mbCancel], 0) of
+        case MessageDlg('Сохранить изменения в файле '+ fileName + '?', mtInformation, mbYesNoCancel, 0) of
             mrCancel : exit;
             mrYes : SaveItemClick(nil);
         end;
@@ -398,6 +463,7 @@ begin
         fileName := ExtractFileName(fileAdr);
         ReadXMLFile(image, tmp);
         OpenXML(image);
+        SetLength(DrawingHistory, 0);
         isEdited := false;
         SetFormCaption;
         Invalidate;
@@ -417,12 +483,11 @@ begin
     if SaveDialog.Execute Then begin
         fileAdr := SaveDialog.FileName;
         fileName := ExtractFileName(fileAdr);
-        case (fileFormatFromFileAdr) of
-            'xml' : WriteXMLFile(CreateXML(), SaveDialog.FileName);
-            'jpeg' : SaveBitMap(SaveDialog.FileName);
-            'bmp' : SaveBitMap(SaveDialog.FileName);
-            'png' : SaveBitMap(SaveDialog.FileName);
-           // 'svg' : SaveSVG();
+        if (SaveDialog.FilterIndex < 4) then begin
+            SaveBitMap(SaveDialog.FilterIndex);
+        end
+        else begin
+           SaveVector(SaveDialog.FilterIndex);
         end;
         isEdited := false;
         SetFormCaption;
@@ -437,12 +502,11 @@ begin
       SaveAsItemClick(nil);
       exit;
     end;
-    case (fileFormatFromFileAdr) of
-        'xml' : WriteXMLFile(CreateXML(), fileAdr);
-        'jpeg' : SaveBitMap(fileAdr);
-        'bmp' : SaveBitMap(fileAdr);
-        'png' : SaveBitMap(fileAdr);
-     //   'svg' : ;
+    if (SaveDialog.FilterIndex < 4) then begin
+            SaveBitMap(SaveDialog.FilterIndex);
+    end
+    else begin
+        SaveVector(SaveDialog.FilterIndex);
     end;
     isEdited := false;
     SetFormCaption;

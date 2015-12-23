@@ -229,9 +229,12 @@ object Desk: TDesk
     left = 48
   end
   object OpenDialog: TOpenDialog
+    Filter = '*.xml|*.xml'
     left = 100
   end
   object SaveDialog: TSaveDialog
+    Filter = '*.bmp|*.bmp|*.png|*.png|*.jpg|*.jpg|*.xml|*.xml|*.svg|*.svg'
+    FilterIndex = 5
     left = 152
   end
 end

@@ -5,7 +5,7 @@ unit UFigures;
 interface
 
 uses
-    Classes, SysUtils, Forms, Controls, Graphics, Dialogs, UField, Math;
+    Classes, SysUtils, Forms, Controls, Graphics, Dialogs, UField, Math, DOM;
 type
     { TFigures }
 
@@ -140,7 +140,7 @@ begin
         ACanvas.Pen.Color := clRed;
         ACanvas.Ellipse(ViewPort.WorldToScreen(ViewPort.FloatPoint(MinX(), 0)).x - 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MinY())).y - 5,
                     ViewPort.WorldToScreen(ViewPort.FloatPoint(MaxX(), 0)).x + 5, ViewPort.WorldToScreen(ViewPort.FloatPoint(0, MaxY())).y + 5);
-         ACanvas.Pen.Style := FPenStyle;
+        ACanvas.Pen.Style := FPenStyle;
         ACanvas.Pen.Color := FPenColor;
         ACanvas.Brush.Style := FBrushStyle;
         ACanvas.Brush.Color := FBrushColor;
